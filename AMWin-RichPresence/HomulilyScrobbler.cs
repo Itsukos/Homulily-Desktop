@@ -166,7 +166,7 @@ namespace AMWin_RichPresence {
                         lastNowPlayingKey = null;
                     }
                 } else {
-                    var key = $"{info.SongArtist}\u001f{info.SongName}\u001f{info.IsPaused}";
+                    var key = $"{info.SongArtist}\u001f{info.SongName}\u001f{info.IsPaused}\u001f{info.CoverArtUrl}";
                     if (key != lastNowPlayingKey || DateTime.UtcNow - lastNowPlayingSent > TimeSpan.FromSeconds(HeartbeatSeconds)) {
                         var ok = await Post("/api/desktop/nowplaying", new {
                             artist = info.SongArtist,
@@ -174,7 +174,8 @@ namespace AMWin_RichPresence {
                             album = Clean(info.SongAlbum, song: false),
                             duration = info.SongDuration,
                             position = info.CurrentTime,
-                            paused = info.IsPaused
+                            paused = info.IsPaused,
+                            cover = info.CoverArtUrl  // Apple Music's own artwork, so .fm has a cover while Last.fm is down
                         });
                         if (ok) {
                             lastNowPlayingKey = key;

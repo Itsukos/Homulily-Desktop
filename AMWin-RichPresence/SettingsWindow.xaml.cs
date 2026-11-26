@@ -45,15 +45,37 @@ namespace AMWin_RichPresence {
         }
 
         private void ShowHomulilyStatus(HomulilyStatus? status) {
+            var signedIn = status != null;
+            HomulilySignOut.Visibility = signedIn ? Visibility.Visible : Visibility.Collapsed;
+            HomulilySignIn.Content = signedIn ? "Sign in again" : "Sign in with Discord";
             if (status == null) {
-                HomulilyStatusText.Text = string.IsNullOrWhiteSpace(Properties.Settings.Default.HomulilyServer) ? "Not signed in." : "Not signed in: check the server and token.";
+                HomulilyStatusText.Text = string.IsNullOrEmpty(AppleMusicHomulilyScrobbler.GetToken())
+                    ? "Not signed in."
+                    : "Signed out: that login no longer works. Sign in again.";
                 return;
             }
-            var text = $"Signed in as {status.DiscordName}";
-            text += status.LastfmUsername != null ? $", Last.fm {status.LastfmUsername}." : ", no Last.fm account linked.";
-            if (!status.CanScrobble) text += " Run fmset with the bot and click allow, or nothing reaches Last.fm.";
-            if (status.Queued > 0) text += $" {status.Queued} waiting for Last.fm.";
+            string text;
+            if (status.LastfmUsername == null) {
+                text = $"Signed in as {status.DiscordName}. No Last.fm account is linked: press Sign in again and allow Last.fm.";
+            } else if (!status.CanScrobble) {
+                text = $"Signed in as {status.DiscordName}, Last.fm {status.LastfmUsername}. Homulily is not allowed to scrobble to it yet: press Sign in again and allow Last.fm.";
+            } else {
+                text = $"Scrobbling to Last.fm as {status.LastfmUsername}.";
+            }
+            if (status.Queued > 0) text += $" {status.Queued} waiting for Last.fm to come back.";
             HomulilyStatusText.Text = text;
+        }
+
+        private async void HomulilySignOut_Click(object sender, RoutedEventArgs e) {
+            try {
+                AppleMusicHomulilyScrobbler.SaveToken("");
+            } catch (Exception ex) {
+                Trace.WriteLine(ex.Message);
+            }
+            HomulilyToken.Password = "";
+            await ((App)Application.Current).UpdateHomulilyCreds();
+            ShowHomulilyStatus(null);
+            HomulilyStatusText.Text = "Not signed in.";
         }
 
         private System.Threading.CancellationTokenSource? homulilySignIn;

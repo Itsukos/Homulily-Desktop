@@ -259,6 +259,46 @@
                                     Padding="0 15 0 5" Margin="0 20 0 7" FontWeight="Bold" FontSize="18" 
                                     Text="{x:Static properties:Localisation.Settings_Scrobbling_SectionTitle}"/>
 
+                                <!-- Homulily (Homulily Desktop): the one thing most people need on this page -->
+                                <ui:Card Margin="0 0 0 10">
+                                    <StackPanel>
+                                        <DockPanel Margin="0 0 0 6">
+                                            <TextBlock FontSize="18" FontWeight="SemiBold" Text="Homulily" VerticalAlignment="Center"/>
+                                            <StackPanel HorizontalAlignment="Right">
+                                                <ui:ToggleSwitch
+                                                    x:Name="CheckBox_HomulilyEnable" Margin="0 2 0 0"
+                                                    IsChecked="{Binding Source={x:Static properties:Settings.Default}, Path=HomulilyEnable, Mode=TwoWay}"
+                                                    Click="CheckBox_HomulilyEnable_Click"/>
+                                            </StackPanel>
+                                        </DockPanel>
+                                        <TextBlock Margin="0 0 0 12" TextWrapping="Wrap"
+                                            Text="Sign in once and Homulily scrobbles to Last.fm for you. If Last.fm is down, your scrobbles are kept and sent when it is back."/>
+                                        <TextBlock x:Name="HomulilyStatusText" Margin="0 0 0 12" FontWeight="SemiBold" TextWrapping="Wrap" Text="Not signed in."/>
+                                        <StackPanel Orientation="Horizontal">
+                                            <ui:Button x:Name="HomulilySignIn" Appearance="Primary"
+                                                IsEnabled="{Binding IsChecked, ElementName=CheckBox_HomulilyEnable}"
+                                                Content="Sign in with Discord" Click="HomulilySignIn_Click"/>
+                                            <ui:Button x:Name="HomulilySignOut" Margin="10 0 0 0" Visibility="Collapsed"
+                                                Content="Sign out" Click="HomulilySignOut_Click"/>
+                                        </StackPanel>
+                                        <ui:CardExpander Margin="0 15 0 0" Header="Advanced: server and token">
+                                            <StackPanel>
+                                                <TextBlock Margin="0 0 0 8" FontSize="12" TextWrapping="Wrap"
+                                                    Text="Only if the button above does not suit you: get a token with the bot's .desktop token command and paste it here."/>
+                                                <TextBlock Text="Server"/>
+                                                <TextBox
+                                                    x:Name="HomulilyServer" Margin="0 7 0 10" TextWrapping="Wrap" FontFamily="Cascadia Mono"
+                                                    Text="{Binding Source={x:Static properties:Settings.Default}, Path=HomulilyServer, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                                                <TextBlock Text="Token"/>
+                                                <PasswordBox x:Name="HomulilyToken" Margin="0 7 0 10" PasswordChar="●"/>
+                                                <Button x:Name="SaveHomulilyCreds" HorizontalAlignment="Right" Content="Save and sign in" Click="SaveHomulilyCreds_Click"/>
+                                            </StackPanel>
+                                        </ui:CardExpander>
+                                    </StackPanel>
+                                </ui:Card>
+
+                                <TextBlock Margin="0 15 0 8" FontWeight="SemiBold" FontSize="15" Text="Scrobble options"/>
+
                                 <CheckBox 
                                     x:Name="CheckBox_LastfmCleanAlbumName"
                                     IsChecked="{Binding Source={x:Static properties:Settings.Default}, Path=LastfmCleanAlbumName, Mode=TwoWay}" 
@@ -310,126 +350,95 @@
                                     Margin="10 0 0 10" FontSize="12"  VerticalAlignment="Center" TextWrapping="Wrap"
                                     Text="{x:Static properties:Localisation.Settings_Scrobbling_ScrobbleTime_Description}"/>
 
-                                <!-- Scrobbling settings: Homulily (Homulily Desktop) -->
-                                <ui:Card Margin="0 15 0 5">
+                                <!-- Scrobbling without Homulily: kept from AMWin-RP, folded away since Homulily does this -->
+                                <ui:CardExpander Margin="0 15 0 5" Header="Other scrobblers (not needed with Homulily)">
                                     <StackPanel>
-                                        <DockPanel Margin="0 0 0 10">
-                                            <TextBlock FontSize="16" FontWeight="SemiBold" Text="Homulily"/>
-                                            <StackPanel HorizontalAlignment="Right">
-                                                <ui:ToggleSwitch
-                                                    x:Name="CheckBox_HomulilyEnable" Margin="0 2 0 10"
-                                                    IsChecked="{Binding Source={x:Static properties:Settings.Default}, Path=HomulilyEnable, Mode=TwoWay}"
-                                                    Click="CheckBox_HomulilyEnable_Click"/>
+                                        <TextBlock Margin="0 0 0 5" FontSize="12" TextWrapping="Wrap" Text="These scrobble straight from this PC with your own credentials. Turning on Last.fm here as well as Homulily counts every song twice."/>
+                                        <!-- Scrobbling settings: Last.FM -->
+                                        <ui:Card Margin="0 15 0 5">
+                                            <StackPanel>
+                                                <DockPanel Margin="0 0 0 10">
+                                                    <TextBlock
+                                                        FontSize="16" FontWeight="SemiBold"
+                                                        Text="{x:Static properties:Localisation.Settings_Scrobbling_LastFM_SectionTitle}"/>
+                                                    <StackPanel HorizontalAlignment="Right">
+                                                    <ui:ToggleSwitch 
+                                                        x:Name="CheckBox_LastfmEnable" Margin="0 2 0 10"
+                                                        IsChecked="{Binding Source={x:Static properties:Settings.Default}, Path=LastfmEnable, Mode=TwoWay}"
+                                                        Click="CheckBox_LastfmEnable_Click"/>
+                                                    </StackPanel>
+                                                </DockPanel>
+                                                <TextBlock 
+                                                    VerticalAlignment="Center"
+                                                    Text="{x:Static properties:Localisation.Settings_Scrobbling_LastFM_ApiKey}"/>
+                                                <TextBox 
+                                                    x:Name="LastfmAPIKey" Margin="0 7 0 10" TextWrapping="Wrap" FontFamily="Cascadia Mono"
+                                                    IsEnabled="{Binding IsChecked, ElementName=CheckBox_LastfmEnable}" 
+                                                    Text="{Binding Source={x:Static properties:Settings.Default}, Path=LastfmAPIKey, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+
+                                                <TextBlock
+                                                    VerticalAlignment="Center" 
+                                                    Text="{x:Static properties:Localisation.Settings_Scrobbling_LastFM_ApiSecret}"/>
+                                                <TextBox 
+                                                    x:Name="LastfmSecret" Margin="0 7 0 10" TextWrapping="Wrap" FontFamily="Cascadia Mono"
+                                                    IsEnabled="{Binding IsChecked, ElementName=CheckBox_LastfmEnable}" 
+                                                    Text="{Binding Source={x:Static properties:Settings.Default}, Path=LastfmSecret, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+
+                                                <TextBlock 
+                                                    VerticalAlignment="Center" 
+                                                    Text="{x:Static properties:Localisation.Settings_Scrobbling_LastFM_Username}"/>
+                                                <TextBox 
+                                                    x:Name="LastfmUsername" Margin="0 7 0 10" TextWrapping="Wrap"
+                                                    IsEnabled="{Binding IsChecked, ElementName=CheckBox_LastfmEnable}" 
+                                                    Text="{Binding Source={x:Static properties:Settings.Default}, Path=LastfmUsername, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+
+                                                <TextBlock
+                                                    VerticalAlignment="Center"
+                                                    Text="{x:Static properties:Localisation.Settings_Scrobbling_LastFM_Password}"/>
+                                                <PasswordBox 
+                                                    x:Name="LastfmPassword"  Margin="0 7 0 10" VerticalAlignment="Center"
+                                                    PasswordChar="●"
+                                                    IsEnabled="{Binding IsChecked, ElementName=CheckBox_LastfmEnable}"/>
+
+                                                <Button 
+                                                    x:Name="SaveLastFMCreds" Margin="0 7 0 0" VerticalAlignment="Center" HorizontalAlignment="Right" 
+                                                    IsEnabled="{Binding IsChecked, ElementName=CheckBox_LastfmEnable}"
+                                                    Content="{x:Static properties:Localisation.Settings_Scrobbling_LastFM_SaveCredentials}" 
+                                                    Click="SaveLastFMCreds_Click" />
                                             </StackPanel>
-                                        </DockPanel>
-                                        <TextBlock Margin="0 0 0 10" FontSize="12" TextWrapping="Wrap"
-                                            Text="Scrobbles through the Homulily bot. Sign in with Discord, allow Last.fm if it asks, and you are done: no Last.fm password or key here. While Last.fm is down, Homulily keeps your scrobbles and sends them once it is back. Leave the Last.fm card below off, or every song counts twice."/>
-                                        <ui:Button x:Name="HomulilySignIn" Margin="0 0 0 12" HorizontalAlignment="Left" Appearance="Primary"
-                                            IsEnabled="{Binding IsChecked, ElementName=CheckBox_HomulilyEnable}"
-                                            Content="Sign in with Discord" Click="HomulilySignIn_Click"/>
-                                        <TextBlock Margin="0 0 0 10" FontSize="12" TextWrapping="Wrap" Text="Or paste a token from the bot's .desktop command:"/>
-                                        <TextBlock VerticalAlignment="Center" Text="Server"/>
-                                        <TextBox
-                                            x:Name="HomulilyServer" Margin="0 7 0 10" TextWrapping="Wrap" FontFamily="Cascadia Mono"
-                                            IsEnabled="{Binding IsChecked, ElementName=CheckBox_HomulilyEnable}"
-                                            Text="{Binding Source={x:Static properties:Settings.Default}, Path=HomulilyServer, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
-                                        <TextBlock VerticalAlignment="Center" Text="Token"/>
-                                        <PasswordBox
-                                            x:Name="HomulilyToken" Margin="0 7 0 10" VerticalAlignment="Center" PasswordChar="●"
-                                            IsEnabled="{Binding IsChecked, ElementName=CheckBox_HomulilyEnable}"/>
-                                        <DockPanel>
-                                            <TextBlock x:Name="HomulilyStatusText" VerticalAlignment="Center" TextWrapping="Wrap" FontSize="12" Text=""/>
-                                            <Button
-                                                x:Name="SaveHomulilyCreds" Margin="10 7 0 0" VerticalAlignment="Center" HorizontalAlignment="Right"
-                                                IsEnabled="{Binding IsChecked, ElementName=CheckBox_HomulilyEnable}"
-                                                Content="Save and sign in" Click="SaveHomulilyCreds_Click"/>
-                                        </DockPanel>
-                                    </StackPanel>
-                                </ui:Card>
+                                        </ui:Card>
 
-                                <!-- Scrobbling settings: Last.FM -->
-                                <ui:Card Margin="0 15 0 5">
-                                    <StackPanel>
-                                        <DockPanel Margin="0 0 0 10">
-                                            <TextBlock
-                                                FontSize="16" FontWeight="SemiBold"
-                                                Text="{x:Static properties:Localisation.Settings_Scrobbling_LastFM_SectionTitle}"/>
-                                            <StackPanel HorizontalAlignment="Right">
-                                            <ui:ToggleSwitch 
-                                                x:Name="CheckBox_LastfmEnable" Margin="0 2 0 10"
-                                                IsChecked="{Binding Source={x:Static properties:Settings.Default}, Path=LastfmEnable, Mode=TwoWay}"
-                                                Click="CheckBox_LastfmEnable_Click"/>
+                                        <!-- Scrobbling settings: ListenBrainz -->
+                                        <ui:Card Margin="0 15 0 5">
+                                            <StackPanel>
+                                                <DockPanel Margin="0 0 0 10">
+                                                    <TextBlock
+                                                        FontSize="16" FontWeight="SemiBold"
+                                                        Text="{x:Static properties:Localisation.Settings_Scrobbling_ListenBrainz_SectionTitle}"/>
+                                                    <StackPanel HorizontalAlignment="Right">
+                                                        <ui:ToggleSwitch 
+                                                            x:Name="CheckBox_ListenBrainzEnable" VerticalAlignment="Center" Margin="0 2 0 10"
+                                                            IsChecked="{Binding Source={x:Static properties:Settings.Default}, Path=ListenBrainzEnable, Mode=TwoWay}"
+                                                            Click="CheckBox_ListenBrainzEnable_Click"/>
+                                                    </StackPanel>
+                                                </DockPanel>
+                                                <TextBlock 
+                                                    VerticalAlignment="Center"
+                                                    Text="{x:Static properties:Localisation.Settings_Scrobbling_ListenBrainz_UserToken}"/>
+                                                <TextBox 
+                                                    x:Name="ListenBrainzUserToken" Margin="0 7 0 10" FontFamily="Cascadia Mono"
+                                                    IsEnabled="{Binding IsChecked, ElementName=CheckBox_ListenBrainzEnable}" 
+                                                    Text="{Binding Source={x:Static properties:Settings.Default}, Path=ListenBrainzUserToken, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                    TextWrapping="Wrap"/>               
+
+                                                <Button x:Name="SaveListenBrainzCreds" Margin="0 7 0 0" VerticalAlignment="Center" HorizontalAlignment="Right" 
+                                                    IsEnabled="{Binding IsChecked, ElementName=CheckBox_ListenBrainzEnable}" 
+                                                    Content="{x:Static properties:Localisation.Settings_Scrobbling_LastFM_SaveCredentials}"
+                                                    Click="SaveListenBrainzCreds_Click"/>
                                             </StackPanel>
-                                        </DockPanel>
-                                        <TextBlock 
-                                            VerticalAlignment="Center"
-                                            Text="{x:Static properties:Localisation.Settings_Scrobbling_LastFM_ApiKey}"/>
-                                        <TextBox 
-                                            x:Name="LastfmAPIKey" Margin="0 7 0 10" TextWrapping="Wrap" FontFamily="Cascadia Mono"
-                                            IsEnabled="{Binding IsChecked, ElementName=CheckBox_LastfmEnable}" 
-                                            Text="{Binding Source={x:Static properties:Settings.Default}, Path=LastfmAPIKey, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
-
-                                        <TextBlock
-                                            VerticalAlignment="Center" 
-                                            Text="{x:Static properties:Localisation.Settings_Scrobbling_LastFM_ApiSecret}"/>
-                                        <TextBox 
-                                            x:Name="LastfmSecret" Margin="0 7 0 10" TextWrapping="Wrap" FontFamily="Cascadia Mono"
-                                            IsEnabled="{Binding IsChecked, ElementName=CheckBox_LastfmEnable}" 
-                                            Text="{Binding Source={x:Static properties:Settings.Default}, Path=LastfmSecret, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
-
-                                        <TextBlock 
-                                            VerticalAlignment="Center" 
-                                            Text="{x:Static properties:Localisation.Settings_Scrobbling_LastFM_Username}"/>
-                                        <TextBox 
-                                            x:Name="LastfmUsername" Margin="0 7 0 10" TextWrapping="Wrap"
-                                            IsEnabled="{Binding IsChecked, ElementName=CheckBox_LastfmEnable}" 
-                                            Text="{Binding Source={x:Static properties:Settings.Default}, Path=LastfmUsername, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
-
-                                        <TextBlock
-                                            VerticalAlignment="Center"
-                                            Text="{x:Static properties:Localisation.Settings_Scrobbling_LastFM_Password}"/>
-                                        <PasswordBox 
-                                            x:Name="LastfmPassword"  Margin="0 7 0 10" VerticalAlignment="Center"
-                                            PasswordChar="●"
-                                            IsEnabled="{Binding IsChecked, ElementName=CheckBox_LastfmEnable}"/>
-
-                                        <Button 
-                                            x:Name="SaveLastFMCreds" Margin="0 7 0 0" VerticalAlignment="Center" HorizontalAlignment="Right" 
-                                            IsEnabled="{Binding IsChecked, ElementName=CheckBox_LastfmEnable}"
-                                            Content="{x:Static properties:Localisation.Settings_Scrobbling_LastFM_SaveCredentials}" 
-                                            Click="SaveLastFMCreds_Click" />
+                                        </ui:Card>
                                     </StackPanel>
-                                </ui:Card>
-
-                                <!-- Scrobbling settings: ListenBrainz -->
-                                <ui:Card Margin="0 15 0 5">
-                                    <StackPanel>
-                                        <DockPanel Margin="0 0 0 10">
-                                            <TextBlock
-                                                FontSize="16" FontWeight="SemiBold"
-                                                Text="{x:Static properties:Localisation.Settings_Scrobbling_ListenBrainz_SectionTitle}"/>
-                                            <StackPanel HorizontalAlignment="Right">
-                                                <ui:ToggleSwitch 
-                                                    x:Name="CheckBox_ListenBrainzEnable" VerticalAlignment="Center" Margin="0 2 0 10"
-                                                    IsChecked="{Binding Source={x:Static properties:Settings.Default}, Path=ListenBrainzEnable, Mode=TwoWay}"
-                                                    Click="CheckBox_ListenBrainzEnable_Click"/>
-                                            </StackPanel>
-                                        </DockPanel>
-                                        <TextBlock 
-                                            VerticalAlignment="Center"
-                                            Text="{x:Static properties:Localisation.Settings_Scrobbling_ListenBrainz_UserToken}"/>
-                                        <TextBox 
-                                            x:Name="ListenBrainzUserToken" Margin="0 7 0 10" FontFamily="Cascadia Mono"
-                                            IsEnabled="{Binding IsChecked, ElementName=CheckBox_ListenBrainzEnable}" 
-                                            Text="{Binding Source={x:Static properties:Settings.Default}, Path=ListenBrainzUserToken, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                            TextWrapping="Wrap"/>               
-
-                                        <Button x:Name="SaveListenBrainzCreds" Margin="0 7 0 0" VerticalAlignment="Center" HorizontalAlignment="Right" 
-                                            IsEnabled="{Binding IsChecked, ElementName=CheckBox_ListenBrainzEnable}" 
-                                            Content="{x:Static properties:Localisation.Settings_Scrobbling_LastFM_SaveCredentials}"
-                                            Click="SaveListenBrainzCreds_Click"/>
-                                    </StackPanel>
-                                </ui:Card>
+                                </ui:CardExpander>
                             </StackPanel>
                         </ScrollViewer>
                     </Border>
