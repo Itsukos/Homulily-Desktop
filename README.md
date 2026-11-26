@@ -12,6 +12,8 @@
 <p align="center">
   <a href="https://github.com/Itsukos/Homulily-Desktop/releases/latest"><b>Download for Windows</b></a>
   &nbsp;·&nbsp;
+  <a href="https://discord.com/oauth2/authorize?client_id=1572268955475771443&scope=bot+applications.commands&permissions=378944">Add Homulily to Discord</a>
+  &nbsp;·&nbsp;
   <a href="https://discord.gg/qbUDe9NN9v">Support server</a>
 </p>
 
@@ -25,6 +27,14 @@
 - **Shows your music on Discord.** Song, artist and album cover as your status, for Apple Music, MusicBee, foobar2000 and music in your browser.
 - **Never scrobbles twice.** If a player already scrobbles to Last.fm by itself, Homulily notices and stops sending its plays (see [below](#no-double-scrobbles)).
 - **Updates itself.** One click, or fully automatic (on by default). Every download is checked against GitHub's checksum before it replaces the old version.
+
+## Add Homulily to your server
+
+This app works through **Homulily**, a Discord bot for music people: Last.fm stats with `/fm`, charts, top lists and
+who-knows rankings for your server, plus AniList, fishing, collectible album cards and games. Add it to your server, link
+Last.fm once, and this app does the rest.
+
+<p><a href="https://discord.com/oauth2/authorize?client_id=1572268955475771443&scope=bot+applications.commands&permissions=378944"><b>Invite Homulily to your server</b></a> &nbsp;·&nbsp; questions go to the <a href="https://discord.gg/qbUDe9NN9v">support server</a></p>
 
 ## Getting started
 
@@ -70,7 +80,7 @@ Spotify (when connected to Last.fm), MusicBee and foobar2000 can all scrobble by
 
 - Windows 11 24H2 or later, x64.
 - For Apple Music: the [Microsoft Store version](https://apps.microsoft.com/detail/9PFHDD62MXS1) of the app.
-- A Discord account in a server with Homulily, and a Last.fm account.
+- A Discord account in a server with Homulily ([invite it](https://discord.com/oauth2/authorize?client_id=1572268955475771443&scope=bot+applications.commands&permissions=378944)), and a Last.fm account.
 
 ## Troubleshooting
 
