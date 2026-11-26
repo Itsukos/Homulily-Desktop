@@ -1,77 +1,96 @@
-# Homulily Desktop
+<p align="center">
+  <img src="AMWin-RichPresence/Resources/AMWinRP-128x.png" width="96" alt="Homulily Desktop icon">
+</p>
 
-A scrobbler for Apple Music on Windows that works through the [Homulily](https://discord.gg/qbUDe9NN9v) Discord bot.
+<h1 align="center">Homulily Desktop</h1>
 
-- **Sign in with Discord.** If Homulily has no Last.fm login for you yet, Last.fm asks you to allow it. No Last.fm password or API key goes into this app.
-- **Scrobbles go through Homulily**, which sends them to Last.fm for you. While Last.fm is down, Homulily keeps them in your history and sends them, with their real times, once Last.fm is back. If Homulily itself cannot be reached, they wait on your PC.
-- **MusicBee and foobar2000** too. They work at once from the window title (artist and title); **Set up** in Settings installs the add-on each needs ([mb_MediaControl](https://github.com/HenryPDT/mb_MediaControl), [foo_mediacontrol](https://github.com/ungive/foo_mediacontrol)) in one click, for the album and song length.
-- **One-button updates**, or fully automatic ones (on by default): a new version is checked against GitHub's checksum before it replaces the old one.
-- **Spotify, browsers and other players too**, switched on under Scrobbling. If Spotify is already connected to Last.fm, nothing counts twice: Homulily checks Last.fm before sending a play from them, and once it sees a player scrobbling by itself it only shows what you play there.
-- **`.fm` keeps working during Last.fm outages**: Homulily shows what this app says you are playing.
-- Discord Rich Presence, lyrics and everything else from AMWin-RP still work.
+<p align="center">
+  Scrobble Apple Music, Spotify, MusicBee and foobar2000 to Last.fm through the <a href="https://discord.gg/qbUDe9NN9v">Homulily</a> Discord bot,<br>
+  and show what you are playing as your Discord status.
+</p>
 
-Run `Homulily Desktop.exe`, open Settings from the tray icon, go to Scrobbling, and press **Sign in with Discord**. Leave the Last.fm card off, or every song counts twice.
-
-Homulily Desktop is a fork of [AMWin-RP](https://github.com/PKBeam/AMWin-RP) by PKBeam and contributors, and like it is licensed under the GNU GPL v3 (see `LICENSE`). The original README follows.
+<p align="center">
+  <a href="https://github.com/Itsukos/Homulily-Desktop/releases/latest"><b>Download for Windows</b></a>
+  &nbsp;·&nbsp;
+  <a href="https://discord.gg/qbUDe9NN9v">Support server</a>
+</p>
 
 ---
 
-# AMWin-RP 
-![GitHub release (latest by date including pre-releases)](https://img.shields.io/github/downloads-pre/PKBeam/AMWin-RP/total) ![GitHub release (latest by date including pre-releases)](https://img.shields.io/github/downloads-pre/PKBeam/AMWin-RP/latest/total) &nbsp; ([한국어](README-KO.md) | [日本語](README-JA.md) | [Russian](README-RU.md) | [Español de Latinoamérica](README-ES_419.md) | [Español de España](README-ES.md) | [Deutsch](README-DE.md))
+## What it does
 
-A Discord Rich Presence client for Apple Music's native Windows app.  
-Also includes scrobbling for Last.FM and ListenBrainz.
+- **Scrobbles to Last.fm for you.** Sign in with Discord once. Homulily sends your scrobbles to Last.fm with the login you gave it, so no Last.fm password or API key ever goes into this app.
+- **Loses nothing when Last.fm is down.** Homulily keeps your scrobbles in your history and sends them, with their real times, once Last.fm answers again. If Homulily itself cannot be reached, they wait on your PC.
+- **Keeps `.fm` working during outages.** Homulily shows what this app says you are playing, cover included.
+- **Shows your music on Discord.** Song, artist and album cover as your status, for Apple Music, MusicBee, foobar2000 and music in your browser.
+- **Never scrobbles twice.** If a player already scrobbles to Last.fm by itself, Homulily notices and stops sending its plays (see [below](#no-double-scrobbles)).
+- **Updates itself.** One click, or fully automatic (on by default). Every download is checked against GitHub's checksum before it replaces the old version.
 
-<image width=450 src="https://github.com/user-attachments/assets/df5d6a83-4630-4384-b521-bc80c286a499" />
-&nbsp; &nbsp; 
-<image src=https://github.com/user-attachments/assets/ea63ddf1-d822-4ffd-be9d-24e13701fce9 width=300 />
+## Getting started
 
-## Installation
-AMWin-RP requires Windows 11 24H2 or later.
+1. [Download](https://github.com/Itsukos/Homulily-Desktop/releases/latest) `Homulily.Desktop.exe` and run it. Nothing to install: it lives in your system tray.
+2. Double-click the tray icon to open Settings, and go to **Scrobbling**.
+3. Press **Sign in with Discord**. If Homulily has no Last.fm login for you yet, Last.fm asks you to allow it. That is all.
 
-Builds can be found [here](https://github.com/PKBeam/AMWin-RP/releases).  
+<p align="center"><img src="docs/settings-homulily.png" width="480" alt="The Homulily card in Settings"></p>
 
-### Which release do I use?
-Pick x64 or ARM64 based on what processor your PC has. (If you have an Intel or AMD CPU, pick the x64 release.)  
+In Discord, `.desktop` shows the download link and whether Homulily can scrobble for you yet.
 
-Then there are two files to choose from: the standard one and one marked as `NoRuntime`.
+> **Windows SmartScreen** may warn about an unrecognised app the first time, because the exe is not code-signed. Choose *More info*, then *Run anyway*. The source is all here if you would rather build it yourself.
 
-If in doubt, use the unlabelled release (i.e. the one without `NoRuntime`).  
-This version works universally, but is larger in size because it bundles the components of .NET that are needed for the app to run.
+## Supported players
 
-The `NoRuntime` release is much smaller, but requires you to have the [.NET 10 desktop runtime](https://dotnet.microsoft.com/en-us/download/dotnet/10.0) installed.  
-If you don't have this runtime installed, the app will prompt you to do it when it opens.
+| Player | How it is read | What you get |
+|---|---|---|
+| **Apple Music** (Microsoft Store app) | Directly from the app's window | Everything: song, album, length, cover, Discord status |
+| **Spotify** | Windows' media controls | Song, album, length. Spotify shows its own Discord status |
+| **MusicBee** | Its window title, or Windows' media controls after **Set up** | Artist and title at once. Album, length and your own cover after one-click Set up |
+| **foobar2000** | Its window title, or Windows' media controls after **Set up** | Artist, album and title at once. Length and your own cover after one-click Set up |
+| **Browsers** (YouTube Music, Spotify Web, Tidal...) | Windows' media controls | Song, usually album and length. Off by default |
+| **Other players** | Windows' media controls | Whatever the player reports. Off by default |
 
-## Usage
-You need the [Microsoft store version](https://apps.microsoft.com/detail/9PFHDD62MXS1) of Apple Music to use AMWin-RP.  
+**Set up** installs the small add-on MusicBee or foobar2000 needs to tell Windows what it plays: [mb_MediaControl](https://github.com/HenryPDT/mb_MediaControl) for MusicBee, [foo_mediacontrol](https://github.com/ungive/foo_mediacontrol) for foobar2000. Each is downloaded from its author's own release and checked before it is used.
 
-- Open the .exe to start the app.
-- AMWin-RP runs in the background, minimised to the system tray.  
-- Double clicking on the tray icon brings up the settings window.
-  - From here you can adjust individual settings such as run on startup, scrobbling and song detection.  
-- The app can be closed by right-clicking on the tray icon and selecting "Exit".  
-- By default, the Apple Music app must be open and currently playing music (i.e. not paused) in order for Rich Presence to show.
+## No double scrobbles
 
-**Note**: If you use virtual desktops, AMWin-RP and Apple Music must be in the same desktop.  
-This is a technical limitation of the UI Automation library used to scrape the Apple Music client app.
+Spotify (when connected to Last.fm), MusicBee and foobar2000 can all scrobble by themselves, and this app cannot see whether yours does. So Homulily checks:
 
-## Scrobbling
-The scrobbler implementation does not support offline Scrobbles, which means any songs you listen to while not connected to the internet will be lost.
+1. A play from anything but Apple Music is held for ten minutes.
+2. Homulily then looks at your recent Last.fm scrobbles. If the same song is already there, the player sent it, so Homulily drops its copy. If not, Homulily sends it.
+3. After a few matches in a row, Homulily marks that player as scrobbling by itself and only shows what you play there. It still checks now and then, so if you later disconnect Spotify from Last.fm, your plays are sent again.
 
-### Last.FM
-You will need your own API Key and API Secret from Last.FM.  
-To generate one, go to https://www.last.fm/api and select "Get an API Account."  
-Enter these in the settings menu with your Last.FM username and password.
+## Privacy
 
-The Last.FM password is stored in [Windows Credentials Manager](https://support.microsoft.com/en-us/windows/accessing-credential-manager-1b5c916a-6a16-889f-8581-fc16e8165ac0) under your local Windows account.
+- **Sent to Homulily:** what you are playing (song, artist, album, length), your scrobbles, and, for your Discord status, the album cover your player has. Covers are re-saved as plain pictures and kept for the 3,000 most recently played.
+- **Stored on your PC:** your Homulily sign-in, in Windows Credential Manager; scrobbles waiting to be sent, in `%LOCALAPPDATA%\Homulily Desktop`; daily logs in the same folder.
+- **Never in this app:** your Last.fm password or any API key.
+- Sign out under Settings, Scrobbling, or with `.desktop off` in Discord. `/forgetme` in Discord erases what Homulily holds about you. Homulily's privacy policy: [homulily-bot-production.up.railway.app/privacy](https://homulily-bot-production.up.railway.app/privacy).
 
-### ListenBrainz 
-You can scrobble to ListenBrainz by adding your user token in the settings.
+## Requirements
 
-## Reporting Bugs
-Before creating a new issue, please make sure your problem does not fall under an existing issue.  
-If you are reporting a problem, please attach any relevant `.log` files (found in `%localappdata%\AMWin-RichPresence`).
+- Windows 11 24H2 or later, x64.
+- For Apple Music: the [Microsoft Store version](https://apps.microsoft.com/detail/9PFHDD62MXS1) of the app.
+- A Discord account in a server with Homulily, and a Last.fm account.
 
-Before posting, please double-check the following:
-- The problem isn't already covered by an existing open or closed issue.
-- You have RP display enabled in Discord (Settings > Activity Settings > Activity Privacy > Activity Status).
+## Troubleshooting
+
+- **Nothing is scrobbled:** open Settings, Scrobbling. The line under the Homulily card says what is missing. In Discord, `.desktop` says the same.
+- **No Discord status:** check *Enable Discord Rich Presence* under Discord RP, and that the player is ticked under *Also follow*. Apple Music takes over while it plays.
+- **A player does not show up:** play something and look at Windows' media flyout (the volume or media button in the taskbar). If the player is not there, Windows does not know about it either; for MusicBee and foobar2000, press **Set up**.
+- **Anything else:** logs are in `%LOCALAPPDATA%\Homulily Desktop`. Bring them to the [support server](https://discord.gg/qbUDe9NN9v).
+
+## Building from source
+
+Needs the [.NET 9 SDK](https://dotnet.microsoft.com/download/dotnet/9.0).
+
+```powershell
+.\BuildReleases.ps1
+```
+
+That publishes one self-contained `publish\Homulily Desktop.exe`. How the app works inside is in [TECHNICAL_DOCS.md](TECHNICAL_DOCS.md).
+
+## Credits and license
+
+Homulily Desktop is a fork of [AMWin-RP](https://github.com/PKBeam/AMWin-RP) by PKBeam and its contributors, who wrote the Apple Music reader, the Discord status, lyrics and the settings window this app is built on. Thank you.
+
+Like AMWin-RP, Homulily Desktop is licensed under the [GNU General Public License v3.0](LICENSE).
