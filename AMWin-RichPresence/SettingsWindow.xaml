@@ -56,6 +56,14 @@
                     <Border>
                         <ScrollViewer x:Name="ScrollViewerSettings" VerticalScrollBarVisibility="Auto">
                             <StackPanel x:Name="ScrollViewerTop" Orientation="Vertical" Margin="20 0 25 20">
+                                <!-- Update available bar (Homulily Desktop) -->
+                                <Border x:Name="UpdateBar" Visibility="Collapsed" Margin="0 12 0 0" Padding="14 10" CornerRadius="8"
+                                        Background="#33A585E8" BorderBrush="#A585E8" BorderThickness="1">
+                                    <DockPanel>
+                                        <ui:Button x:Name="UpdateBarButton" DockPanel.Dock="Right" Appearance="Primary" Content="Update now" Click="UpdateBarButton_Click"/>
+                                        <TextBlock x:Name="UpdateBarText" VerticalAlignment="Center" TextWrapping="Wrap" FontWeight="SemiBold" Text="Update available"/>
+                                    </DockPanel>
+                                </Border>
                                 <!-- General settings -->
                                 <TextBlock
                                     x:Name="SectionTitleGeneral"
@@ -73,6 +81,15 @@
                                     IsChecked="{Binding Source={x:Static properties:Settings.Default}, Path=CheckForUpdatesOnStartup, Mode=TwoWay}" 
                                     Click="CheckBox_CheckForUpdatesOnStartup_Click" 
                                     Content="{x:Static properties:Localisation.Settings_General_UpdateOnStartup}"/>
+                                <CheckBox x:Name="CheckBox_AutoUpdate" Content="Keep me updated automatically"
+                                    IsChecked="{Binding Source={x:Static properties:Settings.Default}, Path=AutoUpdate, Mode=TwoWay}"
+                                    Click="CheckBox_AutoUpdate_Click"/>
+                                <TextBlock Margin="40 0 0 0" FontSize="12" TextWrapping="Wrap"
+                                    Text="New versions install by themselves when the app starts and every few hours. It restarts in a few seconds."/>
+                                <StackPanel Orientation="Horizontal" Margin="28 6 0 10">
+                                    <ui:Button x:Name="UpdateButton" Content="Check for updates" Click="UpdateButton_Click"/>
+                                    <TextBlock x:Name="UpdateStatusText" Margin="12 0 0 0" VerticalAlignment="Center" FontSize="12" TextWrapping="Wrap" Text=""/>
+                                </StackPanel>
 
                                 <CheckBox
                                     x:Name="CheckBox_ClassicalComposerAsArtist" 
@@ -284,12 +301,20 @@
                                                                         <TextBlock Margin="0 16 0 4" FontWeight="SemiBold" Text="Also follow"/>
                                         <CheckBox x:Name="CheckBox_HomulilySpotify" Content="Spotify" Click="HomulilyPlayers_Click"
                                             IsChecked="{Binding Source={x:Static properties:Settings.Default}, Path=HomulilySpotify, Mode=TwoWay}"/>
+                                        <CheckBox x:Name="CheckBox_HomulilyMusicBee" Click="HomulilyPlayers_Click"
+                                            IsChecked="{Binding Source={x:Static properties:Settings.Default}, Path=HomulilyMusicBee, Mode=TwoWay}">
+                                            <TextBlock TextWrapping="Wrap">MusicBee <Run FontSize="12">(needs the </Run><Hyperlink FontSize="12" NavigateUri="https://github.com/HenryPDT/mb_MediaControl/releases/latest" RequestNavigate="Link_RequestNavigate">mb_MediaControl plugin</Hyperlink><Run FontSize="12">, 1.0.4 or newer)</Run></TextBlock>
+                                        </CheckBox>
+                                        <CheckBox x:Name="CheckBox_HomulilyFoobar" Click="HomulilyPlayers_Click"
+                                            IsChecked="{Binding Source={x:Static properties:Settings.Default}, Path=HomulilyFoobar, Mode=TwoWay}">
+                                            <TextBlock TextWrapping="Wrap">foobar2000 <Run FontSize="12">(needs the </Run><Hyperlink FontSize="12" NavigateUri="https://github.com/ungive/foo_mediacontrol/releases/latest" RequestNavigate="Link_RequestNavigate">foo_mediacontrol component</Hyperlink><Run FontSize="12">)</Run></TextBlock>
+                                        </CheckBox>
                                         <CheckBox x:Name="CheckBox_HomulilyBrowsers" Content="Music playing in your browser (YouTube Music, Spotify Web, Tidal...)" Click="HomulilyPlayers_Click"
                                             IsChecked="{Binding Source={x:Static properties:Settings.Default}, Path=HomulilyBrowsers, Mode=TwoWay}"/>
                                         <CheckBox x:Name="CheckBox_HomulilyOtherPlayers" Content="Other players" Click="HomulilyPlayers_Click"
                                             IsChecked="{Binding Source={x:Static properties:Settings.Default}, Path=HomulilyOtherPlayers, Mode=TwoWay}"/>
                                         <TextBlock Margin="0 4 0 0" FontSize="12" TextWrapping="Wrap"
-                                            Text="If Spotify is already connected to Last.fm, nothing counts twice: Homulily checks Last.fm before sending a play from these, and once it sees a player scrobbling by itself it only shows what you play there."/>
+                                            Text="If one of these already scrobbles to Last.fm by itself (Spotify connected to Last.fm, MusicBee's own scrobbler), nothing counts twice: Homulily checks Last.fm before sending a play from these, and once it sees a player scrobbling by itself it only shows what you play there."/>
                                         <ui:CardExpander Margin="0 15 0 0" Header="Advanced: server and token">
                                             <StackPanel>
                                                 <TextBlock Margin="0 0 0 8" FontSize="12" TextWrapping="Wrap"

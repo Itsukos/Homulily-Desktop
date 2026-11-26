@@ -27,6 +27,11 @@ namespace AMWin_RichPresence {
         internal AppleMusicHomulilyScrobbler homulilyClient;
         internal readonly System.Collections.Generic.Dictionary<string, AppleMusicHomulilyScrobbler> otherPlayerClients = new();
         private MediaSessionReader? mediaSessionReader;
+        private System.Timers.Timer? updateTimer;
+
+        /// <summary>A newer release found by the last check, shown as a bar in Settings; null when up to date.</summary>
+        internal Updater.Release? AvailableUpdate { get; private set; }
+        internal event Action? UpdateFound;
         private Logger? logger;
 
         internal static string NormalizeLanguageCode(string? languageCode) {
@@ -119,10 +124,19 @@ namespace AMWin_RichPresence {
             }
             logger?.Log($"Using region {AMWin_RichPresence.Properties.Settings.Default.AppleMusicRegion}");
 
-            // check for updates
+            // remove what a one-button update left behind (again shortly after, in case the old copy was still closing)
+            Updater.CleanUp();
+            _ = Task.Delay(TimeSpan.FromSeconds(15)).ContinueWith(_ => Updater.CleanUp());
+
+            // check for updates now and every 6 hours
             if (AMWin_RichPresence.Properties.Settings.Default.CheckForUpdatesOnStartup) {
                 _ = CheckForUpdates();
             }
+            updateTimer = new System.Timers.Timer(TimeSpan.FromHours(6).TotalMilliseconds) { AutoReset = true };
+            updateTimer.Elapsed += (_, _) => {
+                if (AMWin_RichPresence.Properties.Settings.Default.CheckForUpdatesOnStartup) _ = CheckForUpdates(quiet: true);
+            };
+            updateTimer.Start();
 
             // start Discord RPC
             var statusDisplayOptions = (AppleMusicDiscordClient.RPStatusDisplayOptions)AMWin_RichPresence.Properties.Settings.Default.RPDisplayChoice;
@@ -240,6 +254,8 @@ namespace AMWin_RichPresence {
 
         internal static bool OtherPlayerEnabled(string source) => source switch {
             "spotify" => AMWin_RichPresence.Properties.Settings.Default.HomulilySpotify,
+            "musicbee" => AMWin_RichPresence.Properties.Settings.Default.HomulilyMusicBee,
+            "foobar" => AMWin_RichPresence.Properties.Settings.Default.HomulilyFoobar,
             "browser" => AMWin_RichPresence.Properties.Settings.Default.HomulilyBrowsers,
             _ => AMWin_RichPresence.Properties.Settings.Default.HomulilyOtherPlayers,
         };
@@ -265,49 +281,42 @@ namespace AMWin_RichPresence {
             amScraper.composerAsArtist = composerAsArtist;
         }
 
-        internal async Task CheckForUpdates() {
+        /// <param name="quiet">The 6-hourly check: never pops a dialog, only shows the bar (or updates itself).</param>
+        internal async Task CheckForUpdates(bool quiet = false) {
             try {
-                static int StringVerToInt(string v) {
-                    var verStr = v[1..].Split("b")[0].Replace(".", "").PadRight(4, '0');
-                    return int.Parse(verStr);
+                var release = await Updater.CheckAsync();
+                if (release == null) {
+                    logger?.Log("No Homulily Desktop updates available.");
+                    return;
                 }
-
-                if (!Constants.HttpClient.DefaultRequestHeaders.UserAgent.Any()) {
-                    Constants.HttpClient.DefaultRequestHeaders.Add("User-Agent", "AMWin-RP");
+                AvailableUpdate = release;
+                if (AMWin_RichPresence.Properties.Settings.Default.AutoUpdate) {
+                    logger?.Log($"Updating to {release.Version} by itself");
+                    var failed = await Updater.InstallAsync(release, null, logger);  // returns only when it failed
+                    logger?.Log($"Automatic update failed: {failed}");
                 }
-
-                var result = await Constants.HttpClient.GetStringAsync(Constants.GithubReleasesApiUrl);
-                using var json = JsonDocument.Parse(result);
-
-                var verLocal = Constants.ProgramVersionBase;
-                var verRemote = json.RootElement.GetProperty("name").GetString()!;
-
-                var numverLocal = StringVerToInt(verLocal);
-                var numverRemote = StringVerToInt(verRemote);
-
-                // TODO add support for multiple beta versions (i.e. b1 and b2)
-                if (numverRemote > numverLocal || (numverRemote == numverLocal && verLocal.Contains('b') && !verRemote.Contains('b'))) {
-                    Application.Current.Dispatcher.Invoke((Action)async delegate {
-                        var result = await new MessageBox {
-                            Title = Localisation.Message_AppUpdate_Title,
-                            Content = Localisation.Message_AppUpdate,
-                            IsCloseButtonEnabled = false,
-                            PrimaryButtonText = Localisation.Message_Yes,
-                            SecondaryButtonText = Localisation.Message_No
-                        }.ShowDialogAsync();
-
-                        if (result == MessageBoxResult.Primary) {
-                            Process.Start(new ProcessStartInfo {
-                                FileName = Constants.GithubReleasesUrl,
-                                UseShellExecute = true
-                            });
-                        }
-                    });
-                } else {
-                    logger?.Log("No AMWin-RP updates available.");
-                }
+                Application.Current.Dispatcher.Invoke(() => UpdateFound?.Invoke());
+                if (quiet) return;
+                Application.Current.Dispatcher.Invoke((Action)async delegate {
+                    var answer = await new MessageBox {
+                        Title = "Update available",
+                        Content = $"Homulily Desktop {release.Version} is out. Update now? It takes a few seconds and restarts the app.",
+                        IsCloseButtonEnabled = false,
+                        PrimaryButtonText = "Update now",
+                        SecondaryButtonText = "Later"
+                    }.ShowDialogAsync();
+                    if (answer == MessageBoxResult.Primary) await InstallUpdateOrOpenPage(release);
+                });
             } catch (Exception e) {
-                logger?.Log($"Could not check for AMWin-RP updates: {e.Message}");
+                logger?.Log($"Could not check for Homulily Desktop updates: {e.Message}");
+            }
+        }
+
+        internal async Task InstallUpdateOrOpenPage(Updater.Release release, IProgress<int>? progress = null) {
+            var problem = await Updater.InstallAsync(release, progress, logger);
+            if (problem != "") {
+                await new MessageBox { Title = "Update failed", Content = problem + " Opening the download page instead.", CloseButtonText = "OK" }.ShowDialogAsync();
+                Process.Start(new ProcessStartInfo { FileName = Constants.GithubReleasesUrl, UseShellExecute = true });
             }
         }
     }

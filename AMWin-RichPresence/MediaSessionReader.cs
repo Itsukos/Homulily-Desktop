@@ -15,7 +15,7 @@ namespace AMWin_RichPresence {
     internal class MediaSessionReader {
         public delegate void RefreshHandler(Dictionary<string, AppleMusicInfo?> bySource);
 
-        public static readonly string[] Sources = ["spotify", "browser", "other"];
+        public static readonly string[] Sources = ["spotify", "musicbee", "foobar", "browser", "other"];
 
         private readonly Timer timer;
         private readonly RefreshHandler handler;
@@ -37,6 +37,8 @@ namespace AMWin_RichPresence {
             var id = (appId ?? "").ToLowerInvariant();
             if (id.Contains("applemusic") || id.StartsWith("appleinc.")) return null;
             if (id.Contains("spotify")) return "spotify";
+            if (id.Contains("musicbee")) return "musicbee";   // reports through the mb_MediaControl plugin
+            if (id.Contains("foobar")) return "foobar";       // reports through the foo_mediacontrol component
             string[] browsers = ["chrome", "msedge", "firefox", "308046b0af4a39cb", "opera", "brave", "vivaldi", "arc"];
             if (browsers.Any(b => id.Contains(b))) return "browser";
             return "other";

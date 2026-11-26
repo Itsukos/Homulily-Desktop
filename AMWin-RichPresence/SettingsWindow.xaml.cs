@@ -39,6 +39,11 @@ namespace AMWin_RichPresence {
 
             Image_GitHub.Source = new BitmapImage(new Uri(imagePath, UriKind.Relative));
             AppleMusicRegion.Text = Properties.Settings.Default.AppleMusicRegion.ToUpper();
+            var app = (App)Application.Current;
+            ShowUpdateBar(app.AvailableUpdate);
+            Action onFound = () => ShowUpdateBar(app.AvailableUpdate);
+            app.UpdateFound += onFound;
+            Closed += (_, _) => app.UpdateFound -= onFound;
             LastfmPassword.Password = GetLastFMPassword();
             HomulilyToken.Password = AppleMusicHomulilyScrobbler.GetToken();
             ShowHomulilyStatus(((App)Application.Current).homulilyClient.LastStatus);
@@ -63,7 +68,9 @@ namespace AMWin_RichPresence {
                 text = $"Scrobbling to Last.fm as {status.LastfmUsername}.";
             }
             if (status.Queued > 0) text += $" {status.Queued} waiting to be sent.";
-            if (status.SelfScrobbling.Contains("spotify")) text += " Spotify already scrobbles to Last.fm by itself, so Homulily only shows what you play there.";
+            var names = new System.Collections.Generic.Dictionary<string, string> { ["spotify"] = "Spotify", ["musicbee"] = "MusicBee", ["foobar"] = "foobar2000" };
+            var selfNames = status.SelfScrobbling.Where(names.ContainsKey).Select(s => names[s]).ToList();
+            if (selfNames.Count > 0) text += $" {string.Join(" and ", selfNames)} already {(selfNames.Count == 1 ? "scrobbles" : "scrobble")} to Last.fm by {(selfNames.Count == 1 ? "itself" : "themselves")}, so Homulily only shows what you play there.";
             HomulilyStatusText.Text = text;
         }
 
@@ -105,6 +112,60 @@ namespace AMWin_RichPresence {
             HomulilyToken.Password = token;
             await ((App)Application.Current).UpdateHomulilyCreds();
             ShowHomulilyStatus(((App)Application.Current).homulilyClient.LastStatus);
+        }
+
+        private Updater.Release? pendingRelease;
+
+        private void ShowUpdateBar(Updater.Release? release) {
+            if (release == null) {
+                UpdateBar.Visibility = Visibility.Collapsed;
+                return;
+            }
+            pendingRelease = release;
+            UpdateBarText.Text = $"Update available: Homulily Desktop {release.Version}";
+            UpdateBar.Visibility = Visibility.Visible;
+            UpdateButton.Content = "Update now";
+        }
+
+        private async void UpdateBarButton_Click(object sender, RoutedEventArgs e) {
+            if (pendingRelease == null) return;
+            UpdateBarButton.IsEnabled = false;
+            var progress = new Progress<int>(p => UpdateBarText.Text = $"Downloading the update... {p}%");
+            await ((App)Application.Current).InstallUpdateOrOpenPage(pendingRelease, progress);
+            UpdateBarButton.IsEnabled = true;  // only reached when it failed: success restarts the app
+        }
+
+        private void CheckBox_AutoUpdate_Click(object sender, RoutedEventArgs e) {
+            Properties.Settings.Default.Save();
+        }
+
+        private async void UpdateButton_Click(object sender, RoutedEventArgs e) {
+            UpdateButton.IsEnabled = false;
+            try {
+                if (pendingRelease == null) {
+                    UpdateStatusText.Text = "Checking...";
+                    pendingRelease = await Updater.CheckAsync();
+                    if (pendingRelease == null) {
+                        UpdateStatusText.Text = $"You have the newest version ({Constants.ProgramVersionBase}).";
+                        return;
+                    }
+                    UpdateStatusText.Text = $"{pendingRelease.Version} is out.";
+                    ShowUpdateBar(pendingRelease);
+                    return;
+                }
+                var progress = new Progress<int>(p => UpdateStatusText.Text = $"Downloading... {p}%");
+                var problem = await Updater.InstallAsync(pendingRelease, progress, null);
+                UpdateStatusText.Text = problem;  // only reached when it failed: success restarts the app
+            } catch (Exception ex) {
+                UpdateStatusText.Text = $"Could not check: {ex.Message}";
+            } finally {
+                UpdateButton.IsEnabled = true;
+            }
+        }
+
+        private void Link_RequestNavigate(object sender, System.Windows.Navigation.RequestNavigateEventArgs e) {
+            Process.Start(new ProcessStartInfo { FileName = e.Uri.AbsoluteUri, UseShellExecute = true });
+            e.Handled = true;
         }
 
         private void HomulilyPlayers_Click(object sender, RoutedEventArgs e) {

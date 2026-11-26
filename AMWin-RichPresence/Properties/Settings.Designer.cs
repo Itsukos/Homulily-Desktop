@@ -217,6 +217,30 @@ namespace AMWin_RichPresence.Properties {
 
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool HomulilyMusicBee {
+            get {
+                return ((bool)(this["HomulilyMusicBee"]));
+            }
+            set {
+                this["HomulilyMusicBee"] = value;
+            }
+        }
+
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool HomulilyFoobar {
+            get {
+                return ((bool)(this["HomulilyFoobar"]));
+            }
+            set {
+                this["HomulilyFoobar"] = value;
+            }
+        }
+
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("False")]
         public bool HomulilyBrowsers {
             get {
@@ -236,6 +260,18 @@ namespace AMWin_RichPresence.Properties {
             }
             set {
                 this["HomulilyOtherPlayers"] = value;
+            }
+        }
+
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool AutoUpdate {
+            get {
+                return ((bool)(this["AutoUpdate"]));
+            }
+            set {
+                this["AutoUpdate"] = value;
             }
         }
 
