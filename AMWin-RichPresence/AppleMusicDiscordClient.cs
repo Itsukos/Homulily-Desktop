@@ -55,7 +55,10 @@ internal class AppleMusicDiscordClient {
         }
     }
 
-    public void SetPresence(AppleMusicInfo amInfo, bool showSmallImage, bool showBigImage, bool showAlbumTitle) {
+    // fallbackImage and appleMusicIcons: for players other than Apple Music (Homulily Desktop), which show under Homulily's
+    // own Discord application and have none of Apple Music's image assets.
+    public void SetPresence(AppleMusicInfo amInfo, bool showSmallImage, bool showBigImage, bool showAlbumTitle,
+                            string? fallbackImage = null, bool appleMusicIcons = true) {
         if (!enabled) {
             return;
         }
@@ -111,7 +114,7 @@ internal class AppleMusicDiscordClient {
                 Details = songName,
                 State = songArtist,
                 Assets = new Assets() {
-                    LargeImageKey = (showBigImage ? amInfo.CoverArtUrl : null) ?? Constants.DiscordAppleMusicImageKey ?? "",
+                    LargeImageKey = (showBigImage ? amInfo.CoverArtUrl : null) ?? fallbackImage ?? Constants.DiscordAppleMusicImageKey ?? "",
                     LargeImageText = songLyrics ?? (showAlbumTitle ? songAlbum : ""),
                     SmallImageKey = "",
                     SmallImageText = ""
@@ -140,7 +143,9 @@ internal class AppleMusicDiscordClient {
                 rp.Buttons = buttons.ToArray();
             }
 
-            if (amInfo.IsPaused) {
+            if (!appleMusicIcons) {
+                // no small icon: those images live in Apple Music's Discord application
+            } else if (amInfo.IsPaused) {
                 rp.Assets.SmallImageKey = Constants.DiscordAppleMusicPauseImageKey ?? "";
             } else if (showSmallImage) {
                 rp.Assets.SmallImageKey = ((!showBigImage || amInfo.CoverArtUrl == null) ? Constants.DiscordAppleMusicPlayImageKey : Constants.DiscordAppleMusicImageKey) ?? "";

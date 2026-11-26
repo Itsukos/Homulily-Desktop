@@ -30,6 +30,8 @@ namespace AMWin_RichPresence {
         public static int    NumFailedSearchesBeforeAbandon = 5; // attempts
         public static string ApplicationStylisedName        = "Homulily Desktop";
         public static string DiscordClientID                = "1066220978406953012";
+        public static string HomulilyDiscordClientID        = "1550300997694529536";  // presence for players other than Apple Music: "Listening to Homulily"
+        public static string HomulilyPresenceImage          = "https://raw.githubusercontent.com/Itsukos/Homulily-Desktop/main/AMWin-RichPresence/Resources/AMWinRP-128x.png";
         public static string DiscordAppleMusicImageKey      = "applemusic1024x";
         public static string DiscordAppleMusicPlayImageKey  = "applemusicplay1024x";
         public static string DiscordAppleMusicPauseImageKey = "applemusicpause1024x";

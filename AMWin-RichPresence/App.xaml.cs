@@ -27,6 +27,10 @@ namespace AMWin_RichPresence {
         internal AppleMusicHomulilyScrobbler homulilyClient;
         internal readonly System.Collections.Generic.Dictionary<string, AppleMusicHomulilyScrobbler> otherPlayerClients = new();
         private MediaSessionReader? mediaSessionReader;
+        private AppleMusicDiscordClient otherDiscordClient;  // presence for MusicBee, foobar2000 and others, under Homulily's app
+        private volatile bool appleMusicActive;
+        private readonly System.Collections.Concurrent.ConcurrentDictionary<string, (string? cover, string? songUrl)> otherPlayerArt = new();
+        private static readonly string[] PresenceOrder = ["musicbee", "foobar", "browser", "other"];  // Spotify shows its own presence
         private System.Timers.Timer? updateTimer;
 
         /// <summary>A newer release found by the last check, shown as a bar in Settings; null when up to date.</summary>
@@ -143,6 +147,7 @@ namespace AMWin_RichPresence {
             var classicalComposerAsArtist = AMWin_RichPresence.Properties.Settings.Default.ClassicalComposerAsArtist;
             var preferredDiscordClient = (DiscordClientType)AMWin_RichPresence.Properties.Settings.Default.DiscordClientPreference;
             discordClient = new(Constants.DiscordClientID, enabled: false, statusDisplayOptions: statusDisplayOptions, logger: logger, preferredClient: preferredDiscordClient);
+            otherDiscordClient = new(Constants.HomulilyDiscordClientID, enabled: false, statusDisplayOptions: statusDisplayOptions, logger: logger, preferredClient: preferredDiscordClient);
 
             // start Last.FM scrobbler
             var amRegion = AMWin_RichPresence.Properties.Settings.Default.AppleMusicRegion;
@@ -169,6 +174,10 @@ namespace AMWin_RichPresence {
                 _ = client.init(homulilyCredentials);
             }
             mediaSessionReader = new MediaSessionReader(Constants.RefreshPeriod, (bySource) => {
+                foreach (var info in bySource.Values) {
+                    if (info != null) AddArtAndTimes(info, amRegion);
+                }
+                UpdateOtherPlayerPresence(bySource);
                 if (!AMWin_RichPresence.Properties.Settings.Default.HomulilyEnable) return;
                 foreach (var (source, info) in bySource) {
                     if (!OtherPlayerEnabled(source)) continue;
@@ -184,6 +193,8 @@ namespace AMWin_RichPresence {
             amScraper = new(lastFMApiKey, Constants.RefreshPeriod, classicalComposerAsArtist, AMWin_RichPresence.Properties.Settings.Default.AppleMusicRegion, (newInfo) => {
 
                 // don't update scraper if Apple Music is paused or not open
+                appleMusicActive = newInfo != null && !newInfo.IsPaused;
+                if (appleMusicActive) otherDiscordClient.Disable();  // Apple Music wins while it plays
                 if (newInfo != null && (AMWin_RichPresence.Properties.Settings.Default.ShowRPWhenMusicPaused || !newInfo.IsPaused)) {
 
                     // Discord RP update
@@ -237,6 +248,7 @@ namespace AMWin_RichPresence {
         private void Application_Exit(object sender, ExitEventArgs e) {
             taskbarIcon?.Dispose();
             discordClient.Disable();
+            otherDiscordClient.Disable();
             logger?.Log("Application finished");
         }
 
@@ -250,6 +262,51 @@ namespace AMWin_RichPresence {
 
         internal async Task<bool> UpdateLastfmCreds() {
             return await lastFmScrobblerClient.UpdateCredsAsync(lastFmCredentials);
+        }
+
+        /// <summary>
+        /// Gives a song from another player the cover and song link Apple Music's own site has for it (looked up once per song,
+        /// in the background, the same lookup AMWin uses), and playback times from its position, for the presence and for
+        /// Homulily's .fm cover. Until the lookup finishes the presence shows the Homulily moon.
+        /// </summary>
+        private void AddArtAndTimes(AppleMusicInfo info, string region) {
+            var key = $"{info.SongArtist}\u001f{info.SongName}\u001f{info.SongAlbum}";
+            if (otherPlayerArt.TryGetValue(key, out var art)) {
+                info.CoverArtUrl ??= art.cover;
+                info.SongUrl ??= art.songUrl;
+            } else if (otherPlayerArt.TryAdd(key, (null, null))) {
+                _ = Task.Run(async () => {
+                    try {
+                        var web = new AppleMusicWebScraper(info.SongName, info.SongAlbum, info.SongArtist, region, logger);
+                        otherPlayerArt[key] = (await web.GetAlbumArtUrl(), await web.GetSongUrl());
+                    } catch (Exception ex) {
+                        logger?.Log($"[Presence] No Apple Music art for {info.SongArtist} - {info.SongName}: {ex.Message}");
+                    }
+                });
+                if (otherPlayerArt.Count > 500) otherPlayerArt.Clear();
+            }
+            if (info.CurrentTime is int position) {
+                info.PlaybackStart = DateTime.UtcNow.AddSeconds(-position);
+                if (info.SongDuration is int length) info.PlaybackEnd = info.PlaybackStart.Value.AddSeconds(length);
+            }
+        }
+
+        private void UpdateOtherPlayerPresence(System.Collections.Generic.Dictionary<string, AppleMusicInfo?> bySource) {
+            var settings = AMWin_RichPresence.Properties.Settings.Default;
+            if (!settings.EnableDiscordRP || appleMusicActive) {
+                if (!appleMusicActive) otherDiscordClient.Disable();
+                return;
+            }
+            var pick = PresenceOrder.Where(OtherPlayerEnabled)
+                .Select(s => bySource.TryGetValue(s, out var i) ? i : null)
+                .FirstOrDefault(i => i != null && !i.IsPaused);
+            if (pick == null) {
+                otherDiscordClient.Disable();
+                return;
+            }
+            otherDiscordClient.Enable();
+            otherDiscordClient.SetPresence(pick, showSmallImage: false, settings.EnableRPCoverImages, settings.ShowAlbumTitle,
+                                           fallbackImage: Constants.HomulilyPresenceImage, appleMusicIcons: false);
         }
 
         internal static bool OtherPlayerEnabled(string source) => source switch {
