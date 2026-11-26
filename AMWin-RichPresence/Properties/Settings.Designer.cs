@@ -205,7 +205,7 @@ namespace AMWin_RichPresence.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        [global::System.Configuration.DefaultSettingValueAttribute("https://homulily-bot-production.up.railway.app")]
         public string HomulilyServer {
             get {
                 return ((string)(this["HomulilyServer"]));

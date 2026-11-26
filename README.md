@@ -1,3 +1,18 @@
+# Homulily Desktop
+
+A scrobbler for Apple Music on Windows that works through the [Homulily](https://discord.gg/qbUDe9NN9v) Discord bot.
+
+- **Sign in with Discord.** If Homulily has no Last.fm login for you yet, Last.fm asks you to allow it. No Last.fm password or API key goes into this app.
+- **Scrobbles go through Homulily**, which sends them to Last.fm for you. While Last.fm is down, Homulily keeps them in your history and sends them, with their real times, once Last.fm is back. If Homulily itself cannot be reached, they wait on your PC.
+- **`.fm` keeps working during Last.fm outages**: Homulily shows what this app says you are playing.
+- Discord Rich Presence, lyrics and everything else from AMWin-RP still work.
+
+Run `Homulily Desktop.exe`, open Settings from the tray icon, go to Scrobbling, and press **Sign in with Discord**. Leave the Last.fm card off, or every song counts twice.
+
+Homulily Desktop is a fork of [AMWin-RP](https://github.com/PKBeam/AMWin-RP) by PKBeam and contributors, and like it is licensed under the GNU GPL v3 (see `LICENSE`). The original README follows.
+
+---
+
 # AMWin-RP 
 ![GitHub release (latest by date including pre-releases)](https://img.shields.io/github/downloads-pre/PKBeam/AMWin-RP/total) ![GitHub release (latest by date including pre-releases)](https://img.shields.io/github/downloads-pre/PKBeam/AMWin-RP/latest/total) &nbsp; ([한국어](README-KO.md) | [日本語](README-JA.md) | [Russian](README-RU.md) | [Español de Latinoamérica](README-ES_419.md) | [Español de España](README-ES.md) | [Deutsch](README-DE.md))
 

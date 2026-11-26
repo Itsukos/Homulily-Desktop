@@ -56,6 +56,34 @@ namespace AMWin_RichPresence {
             HomulilyStatusText.Text = text;
         }
 
+        private System.Threading.CancellationTokenSource? homulilySignIn;
+
+        private async void HomulilySignIn_Click(object sender, RoutedEventArgs e) {
+            homulilySignIn?.Cancel();
+            homulilySignIn = new System.Threading.CancellationTokenSource();
+            var server = HomulilyServer.Text.Trim().TrimEnd('/');
+            if (server == "") {
+                server = Constants.DefaultHomulilyServer;
+                HomulilyServer.Text = server;
+            }
+            Properties.Settings.Default.HomulilyServer = server;
+            Properties.Settings.Default.Save();
+            HomulilyStatusText.Text = "Finish signing in in your browser...";
+            var token = await AppleMusicHomulilyScrobbler.SignInWithBrowserAsync(server, null, homulilySignIn.Token);
+            if (token == null) {
+                HomulilyStatusText.Text = "Sign-in did not finish. Try again.";
+                return;
+            }
+            try {
+                AppleMusicHomulilyScrobbler.SaveToken(token);
+            } catch (Exception ex) {
+                Trace.WriteLine(ex.Message);
+            }
+            HomulilyToken.Password = token;
+            await ((App)Application.Current).UpdateHomulilyCreds();
+            ShowHomulilyStatus(((App)Application.Current).homulilyClient.LastStatus);
+        }
+
         private void CheckBox_HomulilyEnable_Click(object sender, RoutedEventArgs e) {
             Properties.Settings.Default.Save();
         }

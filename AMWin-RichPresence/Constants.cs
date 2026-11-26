@@ -35,6 +35,7 @@ namespace AMWin_RichPresence {
         public static string DiscordAppleMusicPauseImageKey = "applemusicpause1024x";
         public static string LastFMCredentialTargetName     = "Last FM Password";
         public static string HomulilyCredentialTargetName   = "Homulily Desktop Token";
+        public static string DefaultHomulilyServer          = "https://homulily-bot-production.up.railway.app";
         public static int    LastFMTimeBeforeScrobbling     = 20; // seconds
         public static string GithubReleasesApiUrl           = "https://api.github.com/repos/Itsukos/Homulily-Desktop/releases/latest";
         public static string GithubReleasesUrl              = "https://github.com/Itsukos/Homulily-Desktop/releases";

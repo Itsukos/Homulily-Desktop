@@ -49,7 +49,7 @@
       <Value Profile="(Default)">True</Value>
     </Setting>
     <Setting Name="HomulilyServer" Type="System.String" Scope="User">
-      <Value Profile="(Default)" />
+      <Value Profile="(Default)">https://homulily-bot-production.up.railway.app</Value>
     </Setting>
     <Setting Name="ShowRPWhenMusicPaused" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">False</Value>

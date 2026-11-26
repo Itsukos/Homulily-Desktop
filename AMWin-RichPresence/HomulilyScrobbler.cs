@@ -58,6 +58,53 @@ namespace AMWin_RichPresence {
                 persistence: CredentialPersistence.LocalMachine);
         }
 
+        /// <summary>
+        /// Signs in through the browser: opens the bot's /desktop/login, which logs in with Discord (and asks Last.fm to allow
+        /// scrobbling when the bot has no login for you yet), then sends the token back to a one-off listener on 127.0.0.1.
+        /// A raw socket rather than HttpListener, which can need admin rights for an address reservation. Null on timeout.
+        /// </summary>
+        public static async Task<string?> SignInWithBrowserAsync(string server, Logger? logger, CancellationToken cancel) {
+            var listener = new System.Net.Sockets.TcpListener(System.Net.IPAddress.Loopback, 0);
+            listener.Start();
+            try {
+                var port = ((System.Net.IPEndPoint)listener.LocalEndpoint).Port;
+                var state = Convert.ToHexString(System.Security.Cryptography.RandomNumberGenerator.GetBytes(16));
+                System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo {
+                    FileName = $"{server.TrimEnd('/')}/desktop/login?port={port}&state={state}",
+                    UseShellExecute = true
+                });
+                using var timeout = CancellationTokenSource.CreateLinkedTokenSource(cancel);
+                timeout.CancelAfter(TimeSpan.FromMinutes(10));
+                while (!timeout.IsCancellationRequested) {
+                    using var conn = await listener.AcceptTcpClientAsync(timeout.Token);
+                    using var stream = conn.GetStream();
+                    var buffer = new byte[8192];
+                    var read = await stream.ReadAsync(buffer, timeout.Token);
+                    var requestLine = Encoding.ASCII.GetString(buffer, 0, read).Split("\r\n")[0];  // GET /callback?... HTTP/1.1
+                    var target = requestLine.Split(' ').ElementAtOrDefault(1) ?? "";
+                    var query = System.Web.HttpUtility.ParseQueryString(new Uri("http://127.0.0.1" + target).Query);
+                    var ok = target.StartsWith("/callback") && query["state"] == state && !string.IsNullOrEmpty(query["token"]);
+                    var page = ok ? "Homulily Desktop is signed in. You can close this tab."
+                                  : "This was not the sign-in Homulily Desktop was waiting for.";
+                    var html = $"<!doctype html><meta charset=utf-8><title>Homulily Desktop</title><body style='font:16px system-ui;background:#14121a;color:#ece8f4;display:grid;place-items:center;min-height:90vh'><p>{page}</p>";
+                    var body = Encoding.UTF8.GetBytes(html);
+                    var head = Encoding.ASCII.GetBytes($"HTTP/1.1 200 OK\r\nContent-Type: text/html; charset=utf-8\r\nContent-Length: {body.Length}\r\nConnection: close\r\n\r\n");
+                    await stream.WriteAsync(head, timeout.Token);
+                    await stream.WriteAsync(body, timeout.Token);
+                    if (ok) {
+                        logger?.Log("[Homulily] Signed in through the browser");
+                        return query["token"];
+                    }
+                }
+            } catch (OperationCanceledException) {
+            } catch (Exception ex) {
+                logger?.Log($"[Homulily] Browser sign-in failed: {ex.Message}");
+            } finally {
+                listener.Stop();
+            }
+            return null;
+        }
+
         public async override Task<bool> init(HomulilyCredentials credentials) {
             creds = credentials;
             if (!Ready) {

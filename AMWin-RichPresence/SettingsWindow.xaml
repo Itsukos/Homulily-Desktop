@@ -323,7 +323,11 @@
                                             </StackPanel>
                                         </DockPanel>
                                         <TextBlock Margin="0 0 0 10" FontSize="12" TextWrapping="Wrap"
-                                            Text="Scrobbles through the Homulily bot, with the Last.fm login you gave it. No Last.fm password here. While Last.fm is down, Homulily keeps your scrobbles and sends them once it is back. Get your server and token with .desktop (the bot's own prefix) and paste them below. Leave the Last.fm card off, or every song counts twice."/>
+                                            Text="Scrobbles through the Homulily bot. Sign in with Discord, allow Last.fm if it asks, and you are done: no Last.fm password or key here. While Last.fm is down, Homulily keeps your scrobbles and sends them once it is back. Leave the Last.fm card below off, or every song counts twice."/>
+                                        <ui:Button x:Name="HomulilySignIn" Margin="0 0 0 12" HorizontalAlignment="Left" Appearance="Primary"
+                                            IsEnabled="{Binding IsChecked, ElementName=CheckBox_HomulilyEnable}"
+                                            Content="Sign in with Discord" Click="HomulilySignIn_Click"/>
+                                        <TextBlock Margin="0 0 0 10" FontSize="12" TextWrapping="Wrap" Text="Or paste a token from the bot's .desktop command:"/>
                                         <TextBlock VerticalAlignment="Center" Text="Server"/>
                                         <TextBox
                                             x:Name="HomulilyServer" Margin="0 7 0 10" TextWrapping="Wrap" FontFamily="Cascadia Mono"
