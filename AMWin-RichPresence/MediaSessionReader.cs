@@ -57,13 +57,73 @@ namespace AMWin_RichPresence {
                     if (info == null) continue;
                     var current = found[source];
                     if (current == null || (current.IsPaused && !info.IsPaused)) found[source] = info;
+                    if (source is "musicbee" or "foobar") FullMode.Add(source);
                 }
+                // MusicBee and foobar2000 without their add-on: read the song from the window title instead (basic mode)
+                found["musicbee"] ??= FromWindowTitle("MusicBee", ParseMusicBeeTitle);
+                found["foobar"] ??= FromWindowTitle("foobar2000", ParseFoobarTitle);
                 handler(found);
             } catch (Exception ex) {
                 logger?.Log($"[Media sessions] Refresh failed: {ex.Message}");
             } finally {
                 busy = false;
             }
+        }
+
+        /// <summary>Players seen reporting through Windows' media controls this session (their add-on works).</summary>
+        public static readonly HashSet<string> FullMode = new();
+
+        private static AppleMusicInfo? FromWindowTitle(string processName, Func<string, AppleMusicInfo?> parse) {
+            foreach (var p in System.Diagnostics.Process.GetProcessesByName(processName)) {
+                try {
+                    var title = p.MainWindowTitle;
+                    if (!string.IsNullOrWhiteSpace(title)) return parse(title.Trim());
+                } catch { }
+            }
+            return null;
+        }
+
+        private static readonly System.Text.RegularExpressions.Regex FoobarSuffix = new(@"^(?<body>.+?)\s*\[foobar2000[^\]]*\]$");
+        private static readonly System.Text.RegularExpressions.Regex FoobarAlbum = new(@"^\[(?<album>[^\]]*?)(?: CD\d+)?(?: #\d+)?\] (?<title>.+)$");
+
+        /// <summary>
+        /// foobar2000's default title while playing: "[Album Artist - ][[Album[ CD1][ #01]] ]Title[ // Track Artist] [foobar2000]".
+        /// When stopped it is just "foobar2000 v2.x", which has no song. Pausing does not change it, so a paused song still reads
+        /// as playing in this mode; the two-minute rule for songs of unknown length keeps that from counting quickly.
+        /// </summary>
+        public static AppleMusicInfo? ParseFoobarTitle(string title) {
+            var m = FoobarSuffix.Match(title);
+            if (!m.Success) return null;
+            var body = m.Groups["body"].Value;
+            var dash = body.IndexOf(" - ", StringComparison.Ordinal);
+            if (dash <= 0) return null;
+            var artist = body[..dash].Trim();
+            var rest = body[(dash + 3)..].Trim();
+            var album = "";
+            var a = FoobarAlbum.Match(rest);
+            if (a.Success) {
+                album = a.Groups["album"].Value.Trim();
+                rest = a.Groups["title"].Value.Trim();
+            }
+            var slashes = rest.IndexOf(" // ", StringComparison.Ordinal);
+            if (slashes > 0) {
+                artist = rest[(slashes + 4)..].Trim();  // the track's own artist beats the album artist
+                rest = rest[..slashes].Trim();
+            }
+            return rest == "" || artist == "" ? null : new AppleMusicInfo(rest, "", album, artist) { IsPaused = false };
+        }
+
+        /// <summary>MusicBee shows "Artist - Title" (optionally followed by " - MusicBee") while playing, and "MusicBee" when not.</summary>
+        public static AppleMusicInfo? ParseMusicBeeTitle(string title) {
+            foreach (var suffix in new[] { " - MusicBee", " | MusicBee" }) {
+                if (title.EndsWith(suffix, StringComparison.OrdinalIgnoreCase)) title = title[..^suffix.Length];
+            }
+            if (title.Equals("MusicBee", StringComparison.OrdinalIgnoreCase)) return null;
+            var dash = title.IndexOf(" - ", StringComparison.Ordinal);
+            if (dash <= 0) return null;
+            var artist = title[..dash].Trim();
+            var track = title[(dash + 3)..].Trim();
+            return track == "" ? null : new AppleMusicInfo(track, "", "", artist) { IsPaused = false };
         }
 
         private static async Task<AppleMusicInfo?> Read(GlobalSystemMediaTransportControlsSession session) {

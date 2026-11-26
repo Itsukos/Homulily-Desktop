@@ -10,7 +10,7 @@
     <AssemblyVersion>1.0</AssemblyVersion>
     <AssemblyName>Homulily Desktop</AssemblyName>
     <Product>Homulily Desktop</Product>
-    <FileVersion>1.6.5</FileVersion>
+    <FileVersion>1.6.6</FileVersion>
     <EnableWindowsTargeting>true</EnableWindowsTargeting>
     <SupportedOSPlatformVersion>10.0.26100.0</SupportedOSPlatformVersion>
     <ApplicationManifest>app.manifest</ApplicationManifest>

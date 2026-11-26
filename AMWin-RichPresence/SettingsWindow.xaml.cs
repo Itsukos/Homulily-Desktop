@@ -44,6 +44,8 @@ namespace AMWin_RichPresence {
             Action onFound = () => ShowUpdateBar(app.AvailableUpdate);
             app.UpdateFound += onFound;
             Closed += (_, _) => app.UpdateFound -= onFound;
+            ShowPlayerStates();
+            Activated += (_, _) => ShowPlayerStates();  // after foobar2000 restarts with the component, coming back shows Ready
             LastfmPassword.Password = GetLastFMPassword();
             HomulilyToken.Password = AppleMusicHomulilyScrobbler.GetToken();
             ShowHomulilyStatus(((App)Application.Current).homulilyClient.LastStatus);
@@ -161,6 +163,37 @@ namespace AMWin_RichPresence {
             } finally {
                 UpdateButton.IsEnabled = true;
             }
+        }
+
+        private void ShowPlayerStates() {
+            void Show(string name, PlayerSetup.State state, bool reporting, System.Windows.Controls.TextBlock status, System.Windows.Controls.Button setUp) {
+                if (reporting) state = PlayerSetup.State.Full;
+                status.Text = state switch {
+                    PlayerSetup.State.NotInstalled => $"{name} is not installed on this PC.",
+                    PlayerSetup.State.Basic => "Basic: artist and title only. Set up adds the album and song length, in one click.",
+                    _ => "Ready: full details, album and song length included.",
+                };
+                setUp.Visibility = state == PlayerSetup.State.Basic ? Visibility.Visible : Visibility.Collapsed;
+            }
+            Show("MusicBee", PlayerSetup.MusicBeeState(), MediaSessionReader.FullMode.Contains("musicbee"), StatusMusicBee, SetUpMusicBee);
+            Show("foobar2000", PlayerSetup.FoobarState(), MediaSessionReader.FullMode.Contains("foobar"), StatusFoobar, SetUpFoobar);
+        }
+
+        private async void SetUpMusicBee_Click(object sender, RoutedEventArgs e) {
+            SetUpMusicBee.IsEnabled = false;
+            StatusMusicBee.Text = "Setting up MusicBee...";
+            var result = await PlayerSetup.InstallMusicBeeAsync(null);
+            ShowPlayerStates();
+            if (PlayerSetup.MusicBeeState() != PlayerSetup.State.Full || !result.StartsWith("Done")) StatusMusicBee.Text = result;
+            else StatusMusicBee.Text = result + " " + StatusMusicBee.Text;
+            SetUpMusicBee.IsEnabled = true;
+        }
+
+        private async void SetUpFoobar_Click(object sender, RoutedEventArgs e) {
+            SetUpFoobar.IsEnabled = false;
+            StatusFoobar.Text = "Downloading the component...";
+            StatusFoobar.Text = await PlayerSetup.InstallFoobarAsync(null);
+            SetUpFoobar.IsEnabled = true;
         }
 
         private void Link_RequestNavigate(object sender, System.Windows.Navigation.RequestNavigateEventArgs e) {

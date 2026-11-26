@@ -4,7 +4,7 @@ A scrobbler for Apple Music on Windows that works through the [Homulily](https:/
 
 - **Sign in with Discord.** If Homulily has no Last.fm login for you yet, Last.fm asks you to allow it. No Last.fm password or API key goes into this app.
 - **Scrobbles go through Homulily**, which sends them to Last.fm for you. While Last.fm is down, Homulily keeps them in your history and sends them, with their real times, once Last.fm is back. If Homulily itself cannot be reached, they wait on your PC.
-- **MusicBee and foobar2000** too, through the [mb_MediaControl](https://github.com/HenryPDT/mb_MediaControl/releases/latest) plugin and the [foo_mediacontrol](https://github.com/ungive/foo_mediacontrol/releases/latest) component.
+- **MusicBee and foobar2000** too. They work at once from the window title (artist and title); **Set up** in Settings installs the add-on each needs ([mb_MediaControl](https://github.com/HenryPDT/mb_MediaControl), [foo_mediacontrol](https://github.com/ungive/foo_mediacontrol)) in one click, for the album and song length.
 - **One-button updates**, or fully automatic ones (on by default): a new version is checked against GitHub's checksum before it replaces the old one.
 - **Spotify, browsers and other players too**, switched on under Scrobbling. If Spotify is already connected to Last.fm, nothing counts twice: Homulily checks Last.fm before sending a play from them, and once it sees a player scrobbling by itself it only shows what you play there.
 - **`.fm` keeps working during Last.fm outages**: Homulily shows what this app says you are playing.

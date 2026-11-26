@@ -301,14 +301,18 @@
                                                                         <TextBlock Margin="0 16 0 4" FontWeight="SemiBold" Text="Also follow"/>
                                         <CheckBox x:Name="CheckBox_HomulilySpotify" Content="Spotify" Click="HomulilyPlayers_Click"
                                             IsChecked="{Binding Source={x:Static properties:Settings.Default}, Path=HomulilySpotify, Mode=TwoWay}"/>
-                                        <CheckBox x:Name="CheckBox_HomulilyMusicBee" Click="HomulilyPlayers_Click"
-                                            IsChecked="{Binding Source={x:Static properties:Settings.Default}, Path=HomulilyMusicBee, Mode=TwoWay}">
-                                            <TextBlock TextWrapping="Wrap">MusicBee <Run FontSize="12">(needs the </Run><Hyperlink FontSize="12" NavigateUri="https://github.com/HenryPDT/mb_MediaControl/releases/latest" RequestNavigate="Link_RequestNavigate">mb_MediaControl plugin</Hyperlink><Run FontSize="12">, 1.0.4 or newer)</Run></TextBlock>
-                                        </CheckBox>
-                                        <CheckBox x:Name="CheckBox_HomulilyFoobar" Click="HomulilyPlayers_Click"
-                                            IsChecked="{Binding Source={x:Static properties:Settings.Default}, Path=HomulilyFoobar, Mode=TwoWay}">
-                                            <TextBlock TextWrapping="Wrap">foobar2000 <Run FontSize="12">(needs the </Run><Hyperlink FontSize="12" NavigateUri="https://github.com/ungive/foo_mediacontrol/releases/latest" RequestNavigate="Link_RequestNavigate">foo_mediacontrol component</Hyperlink><Run FontSize="12">)</Run></TextBlock>
-                                        </CheckBox>
+                                        <CheckBox x:Name="CheckBox_HomulilyMusicBee" Content="MusicBee" Click="HomulilyPlayers_Click"
+                                            IsChecked="{Binding Source={x:Static properties:Settings.Default}, Path=HomulilyMusicBee, Mode=TwoWay}"/>
+                                        <DockPanel Margin="28 0 0 6">
+                                            <ui:Button x:Name="SetUpMusicBee" DockPanel.Dock="Right" Margin="10 0 0 0" Content="Set up" Visibility="Collapsed" Click="SetUpMusicBee_Click"/>
+                                            <TextBlock x:Name="StatusMusicBee" VerticalAlignment="Center" FontSize="12" TextWrapping="Wrap" Text=""/>
+                                        </DockPanel>
+                                        <CheckBox x:Name="CheckBox_HomulilyFoobar" Content="foobar2000" Click="HomulilyPlayers_Click"
+                                            IsChecked="{Binding Source={x:Static properties:Settings.Default}, Path=HomulilyFoobar, Mode=TwoWay}"/>
+                                        <DockPanel Margin="28 0 0 6">
+                                            <ui:Button x:Name="SetUpFoobar" DockPanel.Dock="Right" Margin="10 0 0 0" Content="Set up" Visibility="Collapsed" Click="SetUpFoobar_Click"/>
+                                            <TextBlock x:Name="StatusFoobar" VerticalAlignment="Center" FontSize="12" TextWrapping="Wrap" Text=""/>
+                                        </DockPanel>
                                         <CheckBox x:Name="CheckBox_HomulilyBrowsers" Content="Music playing in your browser (YouTube Music, Spotify Web, Tidal...)" Click="HomulilyPlayers_Click"
                                             IsChecked="{Binding Source={x:Static properties:Settings.Default}, Path=HomulilyBrowsers, Mode=TwoWay}"/>
                                         <CheckBox x:Name="CheckBox_HomulilyOtherPlayers" Content="Other players" Click="HomulilyPlayers_Click"
