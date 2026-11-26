@@ -310,6 +310,39 @@
                                     Margin="10 0 0 10" FontSize="12"  VerticalAlignment="Center" TextWrapping="Wrap"
                                     Text="{x:Static properties:Localisation.Settings_Scrobbling_ScrobbleTime_Description}"/>
 
+                                <!-- Scrobbling settings: Homulily (Homulily Desktop) -->
+                                <ui:Card Margin="0 15 0 5">
+                                    <StackPanel>
+                                        <DockPanel Margin="0 0 0 10">
+                                            <TextBlock FontSize="16" FontWeight="SemiBold" Text="Homulily"/>
+                                            <StackPanel HorizontalAlignment="Right">
+                                                <ui:ToggleSwitch
+                                                    x:Name="CheckBox_HomulilyEnable" Margin="0 2 0 10"
+                                                    IsChecked="{Binding Source={x:Static properties:Settings.Default}, Path=HomulilyEnable, Mode=TwoWay}"
+                                                    Click="CheckBox_HomulilyEnable_Click"/>
+                                            </StackPanel>
+                                        </DockPanel>
+                                        <TextBlock Margin="0 0 0 10" FontSize="12" TextWrapping="Wrap"
+                                            Text="Scrobbles through the Homulily bot, with the Last.fm login you gave it. No Last.fm password here. While Last.fm is down, Homulily keeps your scrobbles and sends them once it is back. Get your server and token with .desktop (the bot's own prefix) and paste them below. Leave the Last.fm card off, or every song counts twice."/>
+                                        <TextBlock VerticalAlignment="Center" Text="Server"/>
+                                        <TextBox
+                                            x:Name="HomulilyServer" Margin="0 7 0 10" TextWrapping="Wrap" FontFamily="Cascadia Mono"
+                                            IsEnabled="{Binding IsChecked, ElementName=CheckBox_HomulilyEnable}"
+                                            Text="{Binding Source={x:Static properties:Settings.Default}, Path=HomulilyServer, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                                        <TextBlock VerticalAlignment="Center" Text="Token"/>
+                                        <PasswordBox
+                                            x:Name="HomulilyToken" Margin="0 7 0 10" VerticalAlignment="Center" PasswordChar="●"
+                                            IsEnabled="{Binding IsChecked, ElementName=CheckBox_HomulilyEnable}"/>
+                                        <DockPanel>
+                                            <TextBlock x:Name="HomulilyStatusText" VerticalAlignment="Center" TextWrapping="Wrap" FontSize="12" Text=""/>
+                                            <Button
+                                                x:Name="SaveHomulilyCreds" Margin="10 7 0 0" VerticalAlignment="Center" HorizontalAlignment="Right"
+                                                IsEnabled="{Binding IsChecked, ElementName=CheckBox_HomulilyEnable}"
+                                                Content="Save and sign in" Click="SaveHomulilyCreds_Click"/>
+                                        </DockPanel>
+                                    </StackPanel>
+                                </ui:Card>
+
                                 <!-- Scrobbling settings: Last.FM -->
                                 <ui:Card Margin="0 15 0 5">
                                     <StackPanel>

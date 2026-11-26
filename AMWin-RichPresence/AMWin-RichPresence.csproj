@@ -2,12 +2,14 @@
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFramework>net10.0-windows10.0.26100.0</TargetFramework>
+    <TargetFramework>net9.0-windows10.0.26100.0</TargetFramework>
     <RootNamespace>AMWin_RichPresence</RootNamespace>
     <Nullable>enable</Nullable>
     <UseWPF>true</UseWPF>
     <ApplicationIcon>Resources\AMWinRP.ico</ApplicationIcon>
     <AssemblyVersion>1.0</AssemblyVersion>
+    <AssemblyName>Homulily Desktop</AssemblyName>
+    <Product>Homulily Desktop</Product>
     <FileVersion>1.6.2</FileVersion>
     <EnableWindowsTargeting>true</EnableWindowsTargeting>
     <SupportedOSPlatformVersion>10.0.26100.0</SupportedOSPlatformVersion>

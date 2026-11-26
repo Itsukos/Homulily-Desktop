@@ -24,6 +24,7 @@ namespace AMWin_RichPresence {
         private AppleMusicDiscordClient discordClient;
         private AppleMusicLastFmScrobbler lastFmScrobblerClient;
         private AppleMusicListenBrainzScrobbler listenBrainzScrobblerClient;
+        internal AppleMusicHomulilyScrobbler homulilyClient;
         private Logger? logger;
 
         internal static string NormalizeLanguageCode(string? languageCode) {
@@ -82,6 +83,15 @@ namespace AMWin_RichPresence {
             }
         }
 
+        public HomulilyCredentials homulilyCredentials {
+            get {
+                var creds = new HomulilyCredentials();
+                creds.server = AMWin_RichPresence.Properties.Settings.Default.HomulilyServer;
+                creds.token = AppleMusicHomulilyScrobbler.GetToken();
+                return creds;
+            }
+        }
+
         public App() {
             ApplyLanguagePreference();
 
@@ -132,6 +142,10 @@ namespace AMWin_RichPresence {
             listenBrainzScrobblerClient = new AppleMusicListenBrainzScrobbler(region: amRegion, logger: logger);
             _ = listenBrainzScrobblerClient.init(listenBrainzCredentials);
 
+            // start the Homulily scrobbler (Homulily Desktop): scrobbles go through the bot, which forwards them to Last.fm
+            homulilyClient = new AppleMusicHomulilyScrobbler(region: amRegion, logger: logger);
+            _ = homulilyClient.init(homulilyCredentials);
+
             // start Apple Music scraper
             amScraper = new(lastFMApiKey, Constants.RefreshPeriod, classicalComposerAsArtist, AMWin_RichPresence.Properties.Settings.Default.AppleMusicRegion, (newInfo) => {
 
@@ -158,8 +172,18 @@ namespace AMWin_RichPresence {
                     if (AMWin_RichPresence.Properties.Settings.Default.ListenBrainzEnable) {
                         listenBrainzScrobblerClient.Scrobbleit(newInfo);
                     }
+
+                    // Homulily scrobble update (scrobbles only count while playing, like the others)
+                    if (AMWin_RichPresence.Properties.Settings.Default.HomulilyEnable && !newInfo.IsPaused) {
+                        homulilyClient.Scrobbleit(newInfo);
+                    }
                 } else {
                     discordClient.Disable();
+                }
+
+                // Homulily now playing: also told when paused or closed, so the bot stops showing it
+                if (AMWin_RichPresence.Properties.Settings.Default.HomulilyEnable) {
+                    homulilyClient.Heartbeat(newInfo);
                 }
             }, logger);
         }
@@ -192,6 +216,10 @@ namespace AMWin_RichPresence {
 
         internal async Task<bool> UpdateLastfmCreds() {
             return await lastFmScrobblerClient.UpdateCredsAsync(lastFmCredentials);
+        }
+
+        internal async Task<bool> UpdateHomulilyCreds() {
+            return await homulilyClient.UpdateCredsAsync(homulilyCredentials);
         }
 
         internal async Task<bool> UpdateListenBrainzCreds() {

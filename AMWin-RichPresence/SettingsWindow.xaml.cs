@@ -40,6 +40,40 @@ namespace AMWin_RichPresence {
             Image_GitHub.Source = new BitmapImage(new Uri(imagePath, UriKind.Relative));
             AppleMusicRegion.Text = Properties.Settings.Default.AppleMusicRegion.ToUpper();
             LastfmPassword.Password = GetLastFMPassword();
+            HomulilyToken.Password = AppleMusicHomulilyScrobbler.GetToken();
+            ShowHomulilyStatus(((App)Application.Current).homulilyClient.LastStatus);
+        }
+
+        private void ShowHomulilyStatus(HomulilyStatus? status) {
+            if (status == null) {
+                HomulilyStatusText.Text = string.IsNullOrWhiteSpace(Properties.Settings.Default.HomulilyServer) ? "Not signed in." : "Not signed in: check the server and token.";
+                return;
+            }
+            var text = $"Signed in as {status.DiscordName}";
+            text += status.LastfmUsername != null ? $", Last.fm {status.LastfmUsername}." : ", no Last.fm account linked.";
+            if (!status.CanScrobble) text += " Run fmset with the bot and click allow, or nothing reaches Last.fm.";
+            if (status.Queued > 0) text += $" {status.Queued} waiting for Last.fm.";
+            HomulilyStatusText.Text = text;
+        }
+
+        private void CheckBox_HomulilyEnable_Click(object sender, RoutedEventArgs e) {
+            Properties.Settings.Default.Save();
+        }
+
+        private async void SaveHomulilyCreds_Click(object sender, RoutedEventArgs e) {
+            Properties.Settings.Default.HomulilyServer = HomulilyServer.Text.Trim().TrimEnd('/');
+            Properties.Settings.Default.Save();
+            try {
+                AppleMusicHomulilyScrobbler.SaveToken(HomulilyToken.Password.Trim());
+            } catch (Exception ex) {
+                Trace.WriteLine(ex.Message);
+            }
+            HomulilyStatusText.Text = "Signing in...";
+            await ((App)Application.Current).UpdateHomulilyCreds();
+            ShowHomulilyStatus(((App)Application.Current).homulilyClient.LastStatus);
+            if (Properties.Settings.Default.LastfmEnable && ((App)Application.Current).homulilyClient.LastStatus != null) {
+                HomulilyStatusText.Text += " The Last.fm card is on too: turn it off, or every song counts twice.";
+            }
         }
 
         private void CheckBox_RunOnStartup_Click(object sender, RoutedEventArgs e) {

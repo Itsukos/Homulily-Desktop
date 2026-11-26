@@ -169,7 +169,7 @@ namespace AMWin_RichPresence.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
         public bool LastfmEnable {
             get {
                 return ((bool)(this["LastfmEnable"]));
@@ -188,6 +188,30 @@ namespace AMWin_RichPresence.Properties {
             }
             set {
                 this["ListenBrainzEnable"] = value;
+            }
+        }
+
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool HomulilyEnable {
+            get {
+                return ((bool)(this["HomulilyEnable"]));
+            }
+            set {
+                this["HomulilyEnable"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string HomulilyServer {
+            get {
+                return ((string)(this["HomulilyServer"]));
+            }
+            set {
+                this["HomulilyServer"] = value;
             }
         }
         
