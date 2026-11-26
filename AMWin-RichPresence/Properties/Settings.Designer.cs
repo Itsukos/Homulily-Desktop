@@ -205,6 +205,42 @@ namespace AMWin_RichPresence.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool HomulilySpotify {
+            get {
+                return ((bool)(this["HomulilySpotify"]));
+            }
+            set {
+                this["HomulilySpotify"] = value;
+            }
+        }
+
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool HomulilyBrowsers {
+            get {
+                return ((bool)(this["HomulilyBrowsers"]));
+            }
+            set {
+                this["HomulilyBrowsers"] = value;
+            }
+        }
+
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool HomulilyOtherPlayers {
+            get {
+                return ((bool)(this["HomulilyOtherPlayers"]));
+            }
+            set {
+                this["HomulilyOtherPlayers"] = value;
+            }
+        }
+
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("https://homulily-bot-production.up.railway.app")]
         public string HomulilyServer {
             get {

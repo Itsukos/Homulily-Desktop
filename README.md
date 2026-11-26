@@ -4,6 +4,7 @@ A scrobbler for Apple Music on Windows that works through the [Homulily](https:/
 
 - **Sign in with Discord.** If Homulily has no Last.fm login for you yet, Last.fm asks you to allow it. No Last.fm password or API key goes into this app.
 - **Scrobbles go through Homulily**, which sends them to Last.fm for you. While Last.fm is down, Homulily keeps them in your history and sends them, with their real times, once Last.fm is back. If Homulily itself cannot be reached, they wait on your PC.
+- **Spotify, browsers and other players too**, switched on under Scrobbling. If Spotify is already connected to Last.fm, nothing counts twice: Homulily checks Last.fm before sending a play from them, and once it sees a player scrobbling by itself it only shows what you play there.
 - **`.fm` keeps working during Last.fm outages**: Homulily shows what this app says you are playing.
 - Discord Rich Presence, lyrics and everything else from AMWin-RP still work.
 

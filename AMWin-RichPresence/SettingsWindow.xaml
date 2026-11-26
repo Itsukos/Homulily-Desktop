@@ -281,6 +281,15 @@
                                             <ui:Button x:Name="HomulilySignOut" Margin="10 0 0 0" Visibility="Collapsed"
                                                 Content="Sign out" Click="HomulilySignOut_Click"/>
                                         </StackPanel>
+                                                                        <TextBlock Margin="0 16 0 4" FontWeight="SemiBold" Text="Also follow"/>
+                                        <CheckBox x:Name="CheckBox_HomulilySpotify" Content="Spotify" Click="HomulilyPlayers_Click"
+                                            IsChecked="{Binding Source={x:Static properties:Settings.Default}, Path=HomulilySpotify, Mode=TwoWay}"/>
+                                        <CheckBox x:Name="CheckBox_HomulilyBrowsers" Content="Music playing in your browser (YouTube Music, Spotify Web, Tidal...)" Click="HomulilyPlayers_Click"
+                                            IsChecked="{Binding Source={x:Static properties:Settings.Default}, Path=HomulilyBrowsers, Mode=TwoWay}"/>
+                                        <CheckBox x:Name="CheckBox_HomulilyOtherPlayers" Content="Other players" Click="HomulilyPlayers_Click"
+                                            IsChecked="{Binding Source={x:Static properties:Settings.Default}, Path=HomulilyOtherPlayers, Mode=TwoWay}"/>
+                                        <TextBlock Margin="0 4 0 0" FontSize="12" TextWrapping="Wrap"
+                                            Text="If Spotify is already connected to Last.fm, nothing counts twice: Homulily checks Last.fm before sending a play from these, and once it sees a player scrobbling by itself it only shows what you play there."/>
                                         <ui:CardExpander Margin="0 15 0 0" Header="Advanced: server and token">
                                             <StackPanel>
                                                 <TextBlock Margin="0 0 0 8" FontSize="12" TextWrapping="Wrap"

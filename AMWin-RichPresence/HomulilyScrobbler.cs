@@ -16,7 +16,7 @@ namespace AMWin_RichPresence {
         public string token;
     }
 
-    public record HomulilyStatus(string? DiscordName, string? LastfmUsername, bool CanScrobble, int Queued);
+    public record HomulilyStatus(string? DiscordName, string? LastfmUsername, bool CanScrobble, int Queued, IReadOnlyList<string> SelfScrobbling);
 
     /// <summary>
     /// Scrobbles through the Homulily Discord bot instead of logging in to Last.fm here. The bot stores each scrobble in its own
@@ -31,7 +31,7 @@ namespace AMWin_RichPresence {
 
         private static readonly HttpClient Http = new() { Timeout = TimeSpan.FromSeconds(15) };
         private static readonly string QueuePath = Path.Combine(Constants.AppDataFolder, "homulily_queue.json");
-        private readonly SemaphoreSlim queueLock = new(1, 1);
+        private static readonly SemaphoreSlim queueLock = new(1, 1);  // one queue file, shared by every source's scrobbler
 
         private HomulilyCredentials creds;
         private string? lastNowPlayingKey;
@@ -41,7 +41,17 @@ namespace AMWin_RichPresence {
 
         public HomulilyStatus? LastStatus { get; private set; }
 
-        public AppleMusicHomulilyScrobbler(string region, Logger? logger = null) : base("Homulily", region, logger) { }
+        public string Source { get; }
+
+        /// <param name="source">applemusic, spotify, browser or other: the bot sends Apple Music at once and checks the rest
+        /// against Last.fm first, in case the player already scrobbles by itself.</param>
+        public AppleMusicHomulilyScrobbler(string region, Logger? logger = null, string source = "applemusic")
+            : base($"Homulily {source}", region, logger) {
+            Source = source;
+        }
+
+        // Windows' media controls often do not say how long a song is: two minutes of play is a safe stand-in.
+        protected override int UnknownLengthWait => Source == "applemusic" ? base.UnknownLengthWait : 120;
 
         private bool Ready => !string.IsNullOrWhiteSpace(creds.server) && !string.IsNullOrWhiteSpace(creds.token);
 
@@ -146,7 +156,10 @@ namespace AMWin_RichPresence {
                     Str("discord_name"),
                     Str("lastfm_username"),
                     root.TryGetProperty("can_scrobble", out var c) && c.ValueKind == JsonValueKind.True,
-                    root.TryGetProperty("queued", out var q) && q.ValueKind == JsonValueKind.Number ? q.GetInt32() : 0);
+                    root.TryGetProperty("queued", out var q) && q.ValueKind == JsonValueKind.Number ? q.GetInt32() : 0,
+                    root.TryGetProperty("self_scrobbling", out var self) && self.ValueKind == JsonValueKind.Array
+                        ? self.EnumerateArray().Where(e => e.ValueKind == JsonValueKind.String).Select(e => e.GetString()!).ToList()
+                        : new List<string>());
             } catch (Exception ex) {
                 logger?.Log($"[Homulily] Status failed: {ex.Message}");
                 return null;
@@ -175,6 +188,7 @@ namespace AMWin_RichPresence {
                             duration = info.SongDuration,
                             position = info.CurrentTime,
                             paused = info.IsPaused,
+                            source = Source,
                             cover = info.CoverArtUrl  // Apple Music's own artwork, so .fm has a cover while Last.fm is down
                         });
                         if (ok) {
@@ -218,11 +232,11 @@ namespace AMWin_RichPresence {
         protected async override Task ScrobbleSong(string artist, string album, string song) {
             // Last.fm counts a scrobble from when the song started.
             var started = DateTimeOffset.UtcNow.AddSeconds(-elapsedSeconds).ToUnixTimeSeconds();
-            await Enqueue(new QueuedScrobble(artist, album, song, started));
+            await Enqueue(new QueuedScrobble(artist, album, song, started, Source));
             await FlushQueue();
         }
 
-        private record QueuedScrobble(string artist, string album, string track, long timestamp);
+        private record QueuedScrobble(string artist, string album, string track, long timestamp, string? source = null);
 
         private async Task<List<QueuedScrobble>> ReadQueue() {
             try {

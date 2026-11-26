@@ -25,6 +25,8 @@ namespace AMWin_RichPresence {
         private AppleMusicLastFmScrobbler lastFmScrobblerClient;
         private AppleMusicListenBrainzScrobbler listenBrainzScrobblerClient;
         internal AppleMusicHomulilyScrobbler homulilyClient;
+        internal readonly System.Collections.Generic.Dictionary<string, AppleMusicHomulilyScrobbler> otherPlayerClients = new();
+        private MediaSessionReader? mediaSessionReader;
         private Logger? logger;
 
         internal static string NormalizeLanguageCode(string? languageCode) {
@@ -146,6 +148,24 @@ namespace AMWin_RichPresence {
             homulilyClient = new AppleMusicHomulilyScrobbler(region: amRegion, logger: logger);
             _ = homulilyClient.init(homulilyCredentials);
 
+            // Spotify, browsers and other players, through Windows' media controls (Homulily Desktop)
+            foreach (var source in MediaSessionReader.Sources) {
+                var client = new AppleMusicHomulilyScrobbler(region: amRegion, logger: logger, source: source);
+                otherPlayerClients[source] = client;
+                _ = client.init(homulilyCredentials);
+            }
+            mediaSessionReader = new MediaSessionReader(Constants.RefreshPeriod, (bySource) => {
+                if (!AMWin_RichPresence.Properties.Settings.Default.HomulilyEnable) return;
+                foreach (var (source, info) in bySource) {
+                    if (!OtherPlayerEnabled(source)) continue;
+                    var client = otherPlayerClients[source];
+                    if (info != null && !info.IsPaused) {
+                        client.Scrobbleit(info);
+                    }
+                    client.Heartbeat(info);
+                }
+            }, logger);
+
             // start Apple Music scraper
             amScraper = new(lastFMApiKey, Constants.RefreshPeriod, classicalComposerAsArtist, AMWin_RichPresence.Properties.Settings.Default.AppleMusicRegion, (newInfo) => {
 
@@ -218,7 +238,16 @@ namespace AMWin_RichPresence {
             return await lastFmScrobblerClient.UpdateCredsAsync(lastFmCredentials);
         }
 
+        internal static bool OtherPlayerEnabled(string source) => source switch {
+            "spotify" => AMWin_RichPresence.Properties.Settings.Default.HomulilySpotify,
+            "browser" => AMWin_RichPresence.Properties.Settings.Default.HomulilyBrowsers,
+            _ => AMWin_RichPresence.Properties.Settings.Default.HomulilyOtherPlayers,
+        };
+
         internal async Task<bool> UpdateHomulilyCreds() {
+            foreach (var client in otherPlayerClients.Values) {
+                _ = client.UpdateCredsAsync(homulilyCredentials);
+            }
             return await homulilyClient.UpdateCredsAsync(homulilyCredentials);
         }
 

@@ -62,7 +62,8 @@ namespace AMWin_RichPresence {
             } else {
                 text = $"Scrobbling to Last.fm as {status.LastfmUsername}.";
             }
-            if (status.Queued > 0) text += $" {status.Queued} waiting for Last.fm to come back.";
+            if (status.Queued > 0) text += $" {status.Queued} waiting to be sent.";
+            if (status.SelfScrobbling.Contains("spotify")) text += " Spotify already scrobbles to Last.fm by itself, so Homulily only shows what you play there.";
             HomulilyStatusText.Text = text;
         }
 
@@ -104,6 +105,10 @@ namespace AMWin_RichPresence {
             HomulilyToken.Password = token;
             await ((App)Application.Current).UpdateHomulilyCreds();
             ShowHomulilyStatus(((App)Application.Current).homulilyClient.LastStatus);
+        }
+
+        private void HomulilyPlayers_Click(object sender, RoutedEventArgs e) {
+            Properties.Settings.Default.Save();
         }
 
         private void CheckBox_HomulilyEnable_Click(object sender, RoutedEventArgs e) {

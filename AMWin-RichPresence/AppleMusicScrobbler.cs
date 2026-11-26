@@ -66,8 +66,12 @@ namespace AMWin_RichPresence {
                 double halfSongDuration = info.SongDuration.Value / 2;
                 return elapsedSeconds >= halfSongDuration || elapsedSeconds >= Properties.Settings.Default.ScrobbleMaxWait; // half the song has passed or more than 4 minutes
             }
-            return elapsedSeconds > Constants.LastFMTimeBeforeScrobbling;
+            return elapsedSeconds > UnknownLengthWait;
         }
+
+        // How long a song of unknown length must play before it counts. Some players read through Windows' media controls never
+        // say how long a song is (Homulily Desktop), so that scrobbler waits longer than Apple Music's 20 seconds.
+        protected virtual int UnknownLengthWait => Constants.LastFMTimeBeforeScrobbling;
 
         protected bool IsRepeating(AppleMusicInfo info) {
             if (info.CurrentTime.HasValue && info.SongDuration.HasValue) {
