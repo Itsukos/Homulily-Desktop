@@ -269,21 +269,40 @@ namespace AMWin_RichPresence {
         /// in the background, the same lookup AMWin uses), and playback times from its position, for the presence and for
         /// Homulily's .fm cover. Until the lookup finishes the presence shows the Homulily moon.
         /// </summary>
+        private readonly System.Collections.Concurrent.ConcurrentDictionary<string, bool> artUploaded = new();
+
         private void AddArtAndTimes(AppleMusicInfo info, string region) {
             var key = $"{info.SongArtist}\u001f{info.SongName}\u001f{info.SongAlbum}";
             if (otherPlayerArt.TryGetValue(key, out var art)) {
                 info.CoverArtUrl ??= art.cover;
                 info.SongUrl ??= art.songUrl;
+                // the player handed its own cover over a moment late: still prefer it
+                if (info.LocalArt != null && artUploaded.TryAdd(key, true)) {
+                    var bytes = info.LocalArt;
+                    _ = Task.Run(async () => {
+                        var url = await homulilyClient.UploadArtAsync(bytes);
+                        if (url != null) otherPlayerArt[key] = (url, otherPlayerArt.TryGetValue(key, out var a) ? a.songUrl : null);
+                    });
+                }
             } else if (otherPlayerArt.TryAdd(key, (null, null))) {
+                var local = info.LocalArt;
+                if (local != null) artUploaded[key] = true;
                 _ = Task.Run(async () => {
                     try {
+                        // 1. the cover the player itself has (uploaded to Homulily, since Discord needs a web address)
+                        string? cover = local != null ? await homulilyClient.UploadArtAsync(local) : null;
+                        // 2. Homulily's own lookup: Last.fm, then Deezer and iTunes
+                        cover ??= await homulilyClient.GetCoverAsync(info.SongArtist, info.SongAlbum);
+                        otherPlayerArt[key] = (cover, null);
+                        // 3. Apple Music's site, for the song link (and the cover when nothing else had one)
                         var web = new AppleMusicWebScraper(info.SongName, info.SongAlbum, info.SongArtist, region, logger);
-                        otherPlayerArt[key] = (await web.GetAlbumArtUrl(), await web.GetSongUrl());
+                        cover ??= await web.GetAlbumArtUrl();
+                        otherPlayerArt[key] = (cover, await web.GetSongUrl());
                     } catch (Exception ex) {
-                        logger?.Log($"[Presence] No Apple Music art for {info.SongArtist} - {info.SongName}: {ex.Message}");
+                        logger?.Log($"[Presence] Cover lookup failed for {info.SongArtist} - {info.SongName}: {ex.Message}");
                     }
                 });
-                if (otherPlayerArt.Count > 500) otherPlayerArt.Clear();
+                if (otherPlayerArt.Count > 500) { otherPlayerArt.Clear(); artUploaded.Clear(); }
             }
             if (info.CurrentTime is int position) {
                 info.PlaybackStart = DateTime.UtcNow.AddSeconds(-position);

@@ -126,6 +126,31 @@ namespace AMWin_RichPresence {
             return track == "" ? null : new AppleMusicInfo(track, "", "", artist) { IsPaused = false };
         }
 
+        // The cover per song, read once (a player may hand it over a moment after the song starts, so a miss is retried a few times).
+        private static readonly System.Collections.Concurrent.ConcurrentDictionary<string, (byte[]? art, int tries)> artCache = new();
+        private const int MaxArtBytes = 4 * 1024 * 1024;
+
+        private static async Task<byte[]?> ReadArt(string appId, string artist, GlobalSystemMediaTransportControlsSessionMediaProperties props) {
+            var key = $"{appId}\u001f{artist}\u001f{props.Title}\u001f{props.AlbumTitle}";
+            if (artCache.TryGetValue(key, out var cached) && (cached.art != null || cached.tries >= 3)) return cached.art;
+            byte[]? art = null;
+            try {
+                if (props.Thumbnail != null) {
+                    using var stream = await props.Thumbnail.OpenReadAsync();
+                    if (stream.Size > 0 && stream.Size <= MaxArtBytes) {
+                        var bytes = new byte[stream.Size];
+                        using var reader = new Windows.Storage.Streams.DataReader(stream);
+                        await reader.LoadAsync((uint)stream.Size);
+                        reader.ReadBytes(bytes);
+                        art = bytes;
+                    }
+                }
+            } catch { }
+            if (artCache.Count > 200) artCache.Clear();
+            artCache[key] = (art, (cached.tries) + 1);
+            return art;
+        }
+
         private static async Task<AppleMusicInfo?> Read(GlobalSystemMediaTransportControlsSession session) {
             var props = await session.TryGetMediaPropertiesAsync();
             if (props == null || string.IsNullOrWhiteSpace(props.Title)) return null;
@@ -136,6 +161,7 @@ namespace AMWin_RichPresence {
             var info = new AppleMusicInfo(props.Title, "", props.AlbumTitle ?? "", artist) {
                 IsPaused = playback?.PlaybackStatus != GlobalSystemMediaTransportControlsSessionPlaybackStatus.Playing
             };
+            info.LocalArt = await ReadArt(session.SourceAppUserModelId, artist, props);
             var timeline = session.GetTimelineProperties();
             if (timeline != null) {
                 var length = (timeline.EndTime - timeline.StartTime).TotalSeconds;

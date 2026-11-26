@@ -29,6 +29,7 @@ namespace AMWin_RichPresence {
         public int? CurrentTime = null;
         public List<LyricLine>? SyncedLyrics = null;
         public bool LyricsSearched = false;
+        public byte[]? LocalArt = null;  // the cover the player itself reports (Homulily Desktop, other players only)
 
         public AppleMusicInfo(string songName, string songSubTitle, string songAlbum, string songArtist) {
             this.SongName = Sanitize(songName);

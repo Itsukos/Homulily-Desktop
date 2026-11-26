@@ -141,6 +141,38 @@ namespace AMWin_RichPresence {
             return req;
         }
 
+        /// <summary>Uploads the player's own cover; Homulily serves it at a link Discord can show. Null when that failed.</summary>
+        public async Task<string?> UploadArtAsync(byte[] image) {
+            if (!Ready) return null;
+            try {
+                var req = Request(HttpMethod.Post, "/api/desktop/art");
+                req.Content = new ByteArrayContent(image);
+                req.Content.Headers.ContentType = new MediaTypeHeaderValue("application/octet-stream");
+                using var resp = await Http.SendAsync(req);
+                if (!resp.IsSuccessStatusCode) return null;
+                using var json = JsonDocument.Parse(await resp.Content.ReadAsStringAsync());
+                return json.RootElement.TryGetProperty("url", out var u) ? u.GetString() : null;
+            } catch (Exception ex) {
+                logger?.Log($"[Homulily] Cover upload failed: {ex.Message}");
+                return null;
+            }
+        }
+
+        /// <summary>A cover from Homulily's own lookups (Last.fm, then Deezer and iTunes). Null when none.</summary>
+        public async Task<string?> GetCoverAsync(string artist, string album) {
+            if (!Ready || string.IsNullOrWhiteSpace(album)) return null;
+            try {
+                var query = $"/api/desktop/cover?artist={Uri.EscapeDataString(artist)}&album={Uri.EscapeDataString(album)}";
+                using var resp = await Http.SendAsync(Request(HttpMethod.Get, query));
+                if (!resp.IsSuccessStatusCode) return null;
+                using var json = JsonDocument.Parse(await resp.Content.ReadAsStringAsync());
+                return json.RootElement.TryGetProperty("cover", out var c) && c.ValueKind == JsonValueKind.String ? c.GetString() : null;
+            } catch (Exception ex) {
+                logger?.Log($"[Homulily] Cover lookup failed: {ex.Message}");
+                return null;
+            }
+        }
+
         public async Task<HomulilyStatus?> GetStatusAsync() {
             if (!Ready) return null;
             try {
