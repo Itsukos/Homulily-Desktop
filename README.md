@@ -44,7 +44,7 @@ Last.fm once, and this app does the rest.
 
 <p align="center"><img src="docs/settings-homulily.png" width="480" alt="The Homulily card in Settings"></p>
 
-In Discord, `.desktop` shows the download link and whether Homulily can scrobble for you yet.
+In Discord, `.desktop` (or `/lastfm desktop` on the public Homulily) shows the download link and whether Homulily can scrobble for you yet.
 
 > **Windows SmartScreen** may warn about an unrecognised app the first time, because the exe is not code-signed. Choose *More info*, then *Run anyway*. The source is all here if you would rather build it yourself.
 
@@ -74,7 +74,7 @@ Spotify (when connected to Last.fm), MusicBee and foobar2000 can all scrobble by
 - **Sent to Homulily:** what you are playing (song, artist, album, length), your scrobbles, and, for your Discord status, the album cover your player has. Covers are re-saved as plain pictures and kept for the 3,000 most recently played.
 - **Stored on your PC:** your Homulily sign-in, in Windows Credential Manager; scrobbles waiting to be sent, in `%LOCALAPPDATA%\Homulily Desktop`; daily logs in the same folder.
 - **Never in this app:** your Last.fm password or any API key.
-- Sign out under Settings, Scrobbling, or with `.desktop off` in Discord. `/forgetme` in Discord erases what Homulily holds about you. Homulily's privacy policy: [homulily-bot-production.up.railway.app/privacy](https://homulily-bot-production.up.railway.app/privacy).
+- Sign out under Settings, Scrobbling, or with `.desktop off` (`/lastfm desktop action:off`) in Discord. `/forgetme` in Discord erases what Homulily holds about you. Homulily's privacy policy: [homulily-bot-production.up.railway.app/privacy](https://homulily-bot-production.up.railway.app/privacy).
 
 ## Requirements
 
@@ -84,7 +84,7 @@ Spotify (when connected to Last.fm), MusicBee and foobar2000 can all scrobble by
 
 ## Troubleshooting
 
-- **Nothing is scrobbled:** open Settings, Scrobbling. The line under the Homulily card says what is missing. In Discord, `.desktop` says the same.
+- **Nothing is scrobbled:** open Settings, Scrobbling. The line under the Homulily card says what is missing. In Discord, `.desktop` or `/lastfm desktop` says the same.
 - **No Discord status:** check *Enable Discord Rich Presence* under Discord RP, and that the player is ticked under *Also follow*. Apple Music takes over while it plays.
 - **A player does not show up:** play something and look at Windows' media flyout (the volume or media button in the taskbar). If the player is not there, Windows does not know about it either; for MusicBee and foobar2000, press **Set up**.
 - **Anything else:** logs are in `%LOCALAPPDATA%\Homulily Desktop`. Bring them to the [support server](https://discord.gg/qbUDe9NN9v).
